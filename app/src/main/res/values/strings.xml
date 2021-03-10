@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BLEScreener3</string>
+    <string name="ble_not_supported">BLEScreener3</string>
+</resources>
