@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.LinearLayout;
@@ -28,14 +29,14 @@ import java.util.Map;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
     private static HashMap<String, Integer> db = new HashMap<>();
-    private Handler handler;
+    //private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ble_scanner);
 
-        handler = new Handler();
+        //handler = new Handler(Looper.getMainLooper());
 
         TextView tv = (TextView) findViewById(R.id.NumDevices);
         tv.setText("Devices Found: " + db.size());
@@ -103,54 +104,61 @@ public class BleScanner extends AppCompatActivity {
                     // new device, add row to table
                     db.put(deviceID, deviceRSSI);
 
-                    handler.post(() -> {
-                        // update UI for num of devices
-                        TextView tv = (TextView) findViewById(R.id.NumDevices);
-                        tv.setText("Devices Found: " + db.size());
 
-                        // update UI for MAC-RSSI database
-                        TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
-                        TableRow tr_head = new TableRow(getApplicationContext());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // update UI for num of devices
+                            TextView tv = (TextView) findViewById(R.id.NumDevices);
+                            tv.setText("Devices Found: " + db.size());
 
-                        TextView MAC_view = new TextView(getApplicationContext());
-                        LinearLayout.LayoutParams MAC_params = new TableRow.LayoutParams(
-                                TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
-                        MAC_params.setMargins(0, 1, 1, 1);
-                        MAC_view.setLayoutParams(MAC_params);
-                        MAC_view.setText(deviceID);
-                        MAC_view.setGravity(Gravity.CENTER);
-                        MAC_view.setBackgroundColor(Color.WHITE);
-                        tr_head.addView(MAC_view);
+                            // update UI for MAC-RSSI database
+                            TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
+                            TableRow tr_head = new TableRow(getApplicationContext());
 
-                        TextView RSSI_view = new TextView(getApplicationContext());
-                        LinearLayout.LayoutParams RSSI_params = new TableRow.LayoutParams(
-                                TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
-                        RSSI_params.setMargins(1, 1, 1, 1);
-                        RSSI_view.setLayoutParams(RSSI_params);
-                        RSSI_view.setText(String.valueOf(deviceRSSI));
-                        RSSI_view.setGravity(Gravity.CENTER);
-                        RSSI_view.setBackgroundColor(Color.WHITE);
-                        tr_head.addView(RSSI_view);
+                            TextView MAC_view = new TextView(getApplicationContext());
+                            LinearLayout.LayoutParams MAC_params = new TableRow.LayoutParams(
+                                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
+                            MAC_params.setMargins(0, 1, 1, 1);
+                            MAC_view.setLayoutParams(MAC_params);
+                            MAC_view.setText(deviceID);
+                            MAC_view.setGravity(Gravity.CENTER);
+                            MAC_view.setBackgroundColor(Color.WHITE);
+                            tr_head.addView(MAC_view);
 
-                        tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
+                            TextView RSSI_view = new TextView(getApplicationContext());
+                            LinearLayout.LayoutParams RSSI_params = new TableRow.LayoutParams(
+                                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
+                            RSSI_params.setMargins(1, 1, 1, 1);
+                            RSSI_view.setLayoutParams(RSSI_params);
+                            RSSI_view.setText(String.valueOf(deviceRSSI));
+                            RSSI_view.setGravity(Gravity.CENTER);
+                            RSSI_view.setBackgroundColor(Color.WHITE);
+                            tr_head.addView(RSSI_view);
 
+                            tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
+                        }
                     });
+
                 } else {
                     // existing device, check whether RSSI changes;
                     if (!db.get(deviceID).equals(deviceRSSI)) {
                         // RSSI changes
                         db.put(deviceID, deviceRSSI);
 
-                        handler.post(() -> {
-                            // update UI for existing MAC with new RSSI value
-                            TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
-                            for (int i = 0; i < tl.getChildCount(); i++) {
-                                TableRow tr = (TableRow) tl.getChildAt(i);
-                                TextView tv1 = (TextView) tr.getChildAt(0);
-                                TextView tv2 = (TextView) tr.getChildAt(1);
-                                String curDeviceID = tv1.getText().toString();
-                                if (curDeviceID.equals(deviceID)) {
-                                    tv2.setText(String.valueOf(deviceRSSI));
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                // update UI for existing MAC with new RSSI value
+                                TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
+                                for (int i = 0; i < tl.getChildCount(); i++) {
+                                    TableRow tr = (TableRow) tl.getChildAt(i);
+                                    TextView tv1 = (TextView) tr.getChildAt(0);
+                                    TextView tv2 = (TextView) tr.getChildAt(1);
+                                    String curDeviceID = tv1.getText().toString();
+                                    if (curDeviceID.equals(deviceID)) {
+                                        tv2.setText(String.valueOf(deviceRSSI));
+                                    }
                                 }
                             }
                         });
