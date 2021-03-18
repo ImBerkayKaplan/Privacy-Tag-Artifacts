@@ -30,9 +30,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //ScanBLEDevices();
-        //ScanNFCDevices();
     }
 
     public void switchLocationMode(View view) {
@@ -44,42 +41,4 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, NfcScanner.class);
         startActivity(intent);
     }
-
-    private void ScanNFCDevices(){
-        NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-
-        if (mNfcAdapter == null) {
-            // Stop here, we definitely need NFC
-            Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-
-        }
-
-        if (!mNfcAdapter.isEnabled()) {
-            Toast.makeText(this, "NFC is disabled.", Toast.LENGTH_LONG).show();
-        }
-
-        mNfcAdapter.enableReaderMode(this, nfcScanCallback, 1, null);
-
-    }
-
-    // NFC tag scan callback
-    private NfcAdapter.ReaderCallback nfcScanCallback = new NfcAdapter.ReaderCallback(){
-        @Override
-        public void onTagDiscovered(Tag tag) {
-            Ndef ndef = Ndef.get(tag);
-            try {
-                ndef.connect();
-                NdefMessage ndefMessage= ndef.getNdefMessage();
-                for(NdefRecord ndefRecord : ndefMessage.getRecords()){
-                    Log.i("TAG", new String(ndefRecord.getPayload()));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-        }
-    };
 }

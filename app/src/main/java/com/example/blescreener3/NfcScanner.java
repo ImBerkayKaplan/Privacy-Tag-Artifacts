@@ -16,12 +16,12 @@ import android.widget.Toast;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class NfcScanner extends AppCompatActivity {
-
+    TextView tv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nfc_scanner);
-
+        tv = (TextView) findViewById(R.id.DeviceURL);
         ScanNFCDevices();
     }
 
@@ -55,8 +55,6 @@ public class NfcScanner extends AppCompatActivity {
                 for(NdefRecord ndefRecord : ndefMessage.getRecords()){
                     String nfcPayload = new String(ndefRecord.getPayload());
                     Log.i("TAG", nfcPayload);
-
-                    TextView tv = (TextView) findViewById(R.id.DeviceURL);
                     tv.setText("Device URL: " + nfcPayload);
                 }
 

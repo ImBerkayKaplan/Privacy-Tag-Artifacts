@@ -10,28 +10,26 @@
         android:id="@+id/buttonLocationMode"
         android:layout_width="181dp"
         android:layout_height="125dp"
-        android:layout_marginStart="112dp"
-        android:layout_marginLeft="112dp"
-        android:layout_marginTop="139dp"
+        android:onClick="switchLocationMode"
         android:text="Location Mode"
-        android:textSize="20dp"
         android:textAllCaps="false"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:onClick="switchLocationMode"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/buttonInventoryMode"
         android:layout_width="181dp"
         android:layout_height="125dp"
-        android:layout_marginStart="112dp"
-        android:layout_marginLeft="112dp"
-        android:layout_marginTop="100dp"
+        android:onClick="switchInventoryMode"
         android:text="Inventory Mode"
-        android:textSize="20dp"
         android:textAllCaps="false"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonLocationMode"
-        android:onClick="switchInventoryMode"/>
+        app:layout_constraintTop_toBottomOf="@+id/buttonLocationMode" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
