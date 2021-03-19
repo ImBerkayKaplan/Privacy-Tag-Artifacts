@@ -11,6 +11,8 @@ import android.nfc.tech.Ndef;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,10 +54,25 @@ public class NfcScanner extends AppCompatActivity {
             try {
                 ndef.connect();
                 NdefMessage ndefMessage= ndef.getNdefMessage();
-                for(NdefRecord ndefRecord : ndefMessage.getRecords()){
+
+                /*for(NdefRecord ndefRecord : ndefMessage.getRecords()){
                     String nfcPayload = new String(ndefRecord.getPayload());
                     Log.i("TAG", nfcPayload);
                     tv.setText("Device URL: " + nfcPayload);
+                }*/
+
+
+                if (ndefMessage != null) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (NdefRecord ndefRecord : ndefMessage.getRecords()) {
+                                String nfcPayload = new String(ndefRecord.getPayload());
+                                Log.i("TAG", nfcPayload);
+                                tv.setText("Device URL: " + nfcPayload);
+                            }
+                        }
+                    });
                 }
 
 
