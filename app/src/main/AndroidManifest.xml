@@ -4,12 +4,13 @@
 
     <uses-sdk android:minSdkVersion="10" />
 
-    <uses-permission android:name="android.permission.NFC" />
+
 
     <uses-feature
         android:name="android.hardware.nfc"
         android:required="true" />
 
+    <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
