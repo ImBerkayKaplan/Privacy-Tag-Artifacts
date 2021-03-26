@@ -23,7 +23,7 @@ import java.util.Map;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
-    private static HashMap<String, Integer> db = new HashMap<>();
+    private static HashMap<String, String> db = new HashMap<>();
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -35,7 +35,7 @@ public class BleScanner extends AppCompatActivity {
 
         // populate UI with stored database
         TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
-        for (Map.Entry<String, Integer> entry : db.entrySet()) {
+        for (Map.Entry<String, String> entry : db.entrySet()) {
             TableRow tr_head = new TableRow(getApplicationContext());
 
             TextView MAC_view = new TextView(getApplicationContext());
@@ -89,10 +89,20 @@ public class BleScanner extends AppCompatActivity {
             super.onScanResult(callbackType, result);
             if(result.getDevice().getAddress().startsWith("AC:23:3F:77:28")) {
                 String deviceID = result.getDevice().getAddress();
-                int deviceRSSI = result.getRssi();
+                int temp = result.getRssi();
+                String deviceRSSI = "";
+                if(temp > -50){
+                    deviceRSSI = "Less than 1 meter away";
+                }else if(temp >-60){
+                    deviceRSSI = "Less than 2 meter away";
+                }else{
+                    deviceRSSI = "More than 2 meters away";
+                }
+                String finalDeviceRSSI = deviceRSSI;
                 if (!db.containsKey(deviceID)) {
                     // new device, add row to table
                     db.put(deviceID, deviceRSSI);
+
 
 
                     runOnUiThread(new Runnable() {
@@ -123,7 +133,7 @@ public class BleScanner extends AppCompatActivity {
                                     TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
                             RSSI_params.setMargins(1, 1, 1, 1);
                             RSSI_view.setLayoutParams(RSSI_params);
-                            RSSI_view.setText(String.valueOf(deviceRSSI));
+                            RSSI_view.setText(finalDeviceRSSI);
                             RSSI_view.setTextColor(Color.parseColor("#000000"));
                             RSSI_view.setAlpha(0.54f);
                             RSSI_view.setGravity(Gravity.CENTER);
@@ -136,7 +146,6 @@ public class BleScanner extends AppCompatActivity {
 
                 } else {
                     db.put(deviceID, deviceRSSI);
-
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -148,7 +157,7 @@ public class BleScanner extends AppCompatActivity {
                                 TextView tv2 = (TextView) tr.getChildAt(1);
                                 String curDeviceID = tv1.getText().toString();
                                 if (curDeviceID.equals(deviceID)) {
-                                    tv2.setText(String.valueOf(deviceRSSI));
+                                    tv2.setText(finalDeviceRSSI);
                                 }
                             }
                         }
