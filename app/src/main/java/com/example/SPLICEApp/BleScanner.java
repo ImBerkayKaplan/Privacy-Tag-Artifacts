@@ -1,4 +1,4 @@
-package com.example.blescreener3;
+package com.example.SPLICEApp;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -97,7 +96,7 @@ public class BleScanner extends AppCompatActivity {
 
 
                     runOnUiThread(new Runnable() {
-                        @Override
+                        //@Override
                         public void run() {
                             // update UI for num of devices
                             TextView tv = (TextView) findViewById(R.id.NumDevices);
@@ -132,34 +131,29 @@ public class BleScanner extends AppCompatActivity {
                             tr_head.addView(RSSI_view);
 
                             tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
-
-                            Log.i("TAG", "Update table");
                         }
                     });
 
                 } else {
-                    // existing device, check whether RSSI changes;
-                    if (!db.get(deviceID).equals(deviceRSSI)) {
-                        // RSSI changes
-                        db.put(deviceID, deviceRSSI);
+                    db.put(deviceID, deviceRSSI);
 
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                // update UI for existing MAC with new RSSI value
-                                TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
-                                for (int i = 0; i < tl.getChildCount(); i++) {
-                                    TableRow tr = (TableRow) tl.getChildAt(i);
-                                    TextView tv1 = (TextView) tr.getChildAt(0);
-                                    TextView tv2 = (TextView) tr.getChildAt(1);
-                                    String curDeviceID = tv1.getText().toString();
-                                    if (curDeviceID.equals(deviceID)) {
-                                        tv2.setText(String.valueOf(deviceRSSI));
-                                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // update UI for existing MAC with new RSSI value
+                            TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
+                            for (int i = 0; i < tl.getChildCount(); i++) {
+                                TableRow tr = (TableRow) tl.getChildAt(i);
+                                TextView tv1 = (TextView) tr.getChildAt(0);
+                                TextView tv2 = (TextView) tr.getChildAt(1);
+                                String curDeviceID = tv1.getText().toString();
+                                if (curDeviceID.equals(deviceID)) {
+                                    tv2.setText(String.valueOf(deviceRSSI));
                                 }
                             }
-                        });
-                    }
+                        }
+                    });
+
                 }
             }
         }

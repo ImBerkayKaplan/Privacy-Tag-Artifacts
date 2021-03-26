@@ -1,4 +1,4 @@
-package com.example.blescreener3;
+package com.example.SPLICEApp;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,9 +10,6 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 

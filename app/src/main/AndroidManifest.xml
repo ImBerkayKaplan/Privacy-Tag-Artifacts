@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.blescreener3">
+    package="com.example.SPLICEApp">
 
     <uses-sdk android:minSdkVersion="10" />
 
@@ -28,10 +28,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BLEScreener3">
-        <activity android:name=".NfcScanner"></activity>
+        <activity android:name="com.example.SPLICEApp.NfcScanner"></activity>
         <activity
-            android:name=".BleScanner"/>
-        <activity android:name=".MainActivity">
+            android:name="com.example.SPLICEApp.BleScanner"/>
+        <activity android:name="com.example.SPLICEApp.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
