@@ -1,6 +1,12 @@
 package com.example.blescreener3;
-import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.Intent;
+import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -8,40 +14,36 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.LinearLayout;
+import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class MainActivity extends AppCompatActivity {
-    Set<String> addresses = new HashSet<String>();
-    Set<String> addresses_on_screen = new HashSet<String>();
-    LinearLayout linearLayout;
-    Context mainContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mainContext = this;
-        linearLayout = new LinearLayout(mainContext);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        setContentView(linearLayout);
+        setContentView(R.layout.activity_main);
+    }
 
+    public void switchLocationMode(View view) {
+        Intent intent = new Intent(this, BleScanner.class);
+        startActivity(intent);
+    }
 
-        // Add the addresses into the set that can appear
-        addresses.add("AC:23:3F:77:28:61");
-        addresses.add("AC:23:3F:77:28:62");
-        addresses.add("AC:23:3F:77:28:63");
+    public void switchInventoryMode(View view) {
+        Intent intent = new Intent(this, NfcScanner.class);
+        startActivity(intent);
+    }
 
-        // Create threads to scan for BLE and NFC devices
-        BLEDeviceScanning bleDeviceScanning = new BLEDeviceScanning(linearLayout, this);
-        bleDeviceScanning.startScanning();
-        NFCTagScanning nfcTagScanning = new NFCTagScanning(this, this);
-        nfcTagScanning.startScanning();
+    public void switchAcousticMode(View view) {
+        Intent intent = new Intent(this, acousticMode.class);
+        startActivity(intent);
     }
 }
