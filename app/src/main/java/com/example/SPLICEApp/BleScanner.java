@@ -24,6 +24,7 @@ import java.util.Map;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
     private static HashMap<String, String> db = new HashMap<>();
+    private String DEVICE_ADDRESS_FILTER = "EF:F3:F2:34:B9:1F";
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -87,7 +88,7 @@ public class BleScanner extends AppCompatActivity {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            if(result.getDevice().getAddress().startsWith("AC:23:3F:77:28")) {
+            if(result.getDevice().getAddress().startsWith(DEVICE_ADDRESS_FILTER)) {
                 String deviceID = result.getDevice().getAddress();
                 int temp = result.getRssi();
                 String deviceRSSI = "";

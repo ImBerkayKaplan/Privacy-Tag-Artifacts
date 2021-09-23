@@ -42,4 +42,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, NfcScanner.class);
         startActivity(intent);
     }
+
+    public void switchAcousticMode(View view) {
+        Intent intent = new Intent(this, acousticMode.class);
+        startActivity(intent);
+    }
 }

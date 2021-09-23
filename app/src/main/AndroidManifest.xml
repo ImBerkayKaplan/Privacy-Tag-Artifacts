@@ -4,8 +4,6 @@
 
     <uses-sdk android:minSdkVersion="10" />
 
-
-
     <uses-feature
         android:name="android.hardware.nfc"
         android:required="true" />
@@ -28,10 +26,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BLEScreener3">
-        <activity android:name="com.example.SPLICEApp.NfcScanner"></activity>
-        <activity
-            android:name="com.example.SPLICEApp.BleScanner"/>
-        <activity android:name="com.example.SPLICEApp.MainActivity">
+        <activity android:name=".acousticMode"></activity>
+        <activity android:name=".NfcScanner" />
+        <activity android:name=".BleScanner" />
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
