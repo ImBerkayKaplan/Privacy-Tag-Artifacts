@@ -8,16 +8,24 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +33,7 @@ import java.util.Map;
 public class BleScanner extends AppCompatActivity {
     private static HashMap<String, String> db = new HashMap<>();
     private String DEVICE_ADDRESS_FILTER = "EF:F3:F2:34:B9:1F";
+    //private String DEVICE_ADDRESS_FILTER = "DA:63:34:EF:9C:66";
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -63,6 +72,21 @@ public class BleScanner extends AppCompatActivity {
 
             tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
         }
+
+        //ScanBLEDevices();
+    }
+
+    public void saveAddress(View view){
+        final EditText addressView = (EditText) findViewById(R.id.inputAddress);
+        DEVICE_ADDRESS_FILTER = addressView.getText().toString();
+        Log.i("Input address", DEVICE_ADDRESS_FILTER);
+
+        /*ContextWrapper contextWrapper = new ContextWrapper(getApplicationContext());
+        File directory = contextWrapper.getDir(getFilesDir().getName(), Context.MODE_PRIVATE);
+        File file =  new File(directory, "addresses.txt");
+        FileOutputStream fos = new FileOutputStream("address.txt", true); // save
+        fos.write(DEVICE_ADDRESS_FILTER.getBytes());
+        fos.close();*/
 
         ScanBLEDevices();
     }
@@ -103,9 +127,6 @@ public class BleScanner extends AppCompatActivity {
                 if (!db.containsKey(deviceID)) {
                     // new device, add row to table
                     db.put(deviceID, deviceRSSI);
-
-
-
                     runOnUiThread(new Runnable() {
                         //@Override
                         public void run() {

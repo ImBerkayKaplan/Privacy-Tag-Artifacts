@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
@@ -18,13 +19,18 @@ import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -35,6 +41,9 @@ public class acousticMode extends AppCompatActivity {
     private boolean scanning;
     private Handler handler = new Handler();
     private long SCAN_PERIOD = 4000;
+
+    // Bluefruit52: DA:63:34:EF:9C:66
+    private String address = "DA:63:34:EF:9C:66";
 
     AdvertisingSet currentAdvertisingSet;
 
@@ -60,24 +69,6 @@ public class acousticMode extends AppCompatActivity {
                 .setIncludeDeviceName(true)
                 .addServiceData(pUuid, value)
                 .build();
-
-        /*AdvertisingSetParameters parameters = (new AdvertisingSetParameters.Builder())
-                //.setLegacyMode(true)
-                .setConnectable(false)
-                .setScannable(true)
-                .setInterval(AdvertisingSetParameters.INTERVAL_HIGH)
-                .setTxPowerLevel(AdvertisingSetParameters.TX_POWER_MEDIUM)
-                .build();
-
-        AdvertisingSetCallback callback = new AdvertisingSetCallback() {
-            @Override
-            public void onAdvertisingSetStarted(AdvertisingSet advertisingSet, int txPower, int status) {
-                Log.d("BLE", "Advertising started");
-                currentAdvertisingSet = advertisingSet;
-            }
-        };
-
-        advertiser.startAdvertisingSet(parameters, data, null, null, null, callback);*/
 
         AdvertiseSettings settings = new AdvertiseSettings.Builder()
                 .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
@@ -121,7 +112,7 @@ public class acousticMode extends AppCompatActivity {
         }*/
     }
 
-    private ScanCallback bleScanCallback = new ScanCallback() {
+    /*private ScanCallback bleScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
@@ -137,9 +128,9 @@ public class acousticMode extends AppCompatActivity {
                 bluetoothGatt.writeCharacteristic(characteristic);
             }  // TODO
         }
-    };
+    };*/
 
-    private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
+    /*private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
@@ -150,5 +141,5 @@ public class acousticMode extends AppCompatActivity {
                 gatt.close();
             }
         }
-    };
+    };*/
 }
