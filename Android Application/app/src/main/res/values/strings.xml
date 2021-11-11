@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">BLEScreener3</string>
-    <string name="ble_not_supported">BLEScreener3</string>
+    <string name="app_name">SPLICEApp</string>
+    <string name="ble_not_supported">SPLICEApp</string>
     <string name="title_activity_nfc_scanner">NFC</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>

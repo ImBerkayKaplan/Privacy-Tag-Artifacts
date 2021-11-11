@@ -7,16 +7,43 @@
     tools:context=".acousticMode">
 
     <Button
+        android:id="@+id/acousticScan"
+        android:layout_width="181dp"
+        android:layout_height="125dp"
+        android:onClick="scanDevices"
+        android:text="Search devices"
+        android:textAllCaps="false"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.456"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.183" />
+
+    <Button
         android:id="@+id/acousticButton"
         android:layout_width="181dp"
         android:layout_height="125dp"
+        android:onClick="sendBeacon"
         android:text="Send Beacon"
         android:textAllCaps="false"
         android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.456"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.2"
-        android:onClick="sendBeacon"/>
+        app:layout_constraintVertical_bias="0.844" />
+
+    <Spinner
+        android:id="@+id/address_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="78dp"
+        android:layout_marginBottom="166dp"
+        app:layout_constraintBottom_toTopOf="@+id/acousticButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/acousticScan" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
