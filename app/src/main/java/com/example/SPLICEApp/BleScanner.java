@@ -34,6 +34,7 @@ public class BleScanner extends AppCompatActivity {
     private static HashMap<String, String> db = new HashMap<>();
     private String DEVICE_ADDRESS_FILTER = "EF:F3:F2:34:B9:1F";
     //private String DEVICE_ADDRESS_FILTER = "DA:63:34:EF:9C:66";
+    // "E1:6F:AB:4F:85:25"
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -73,7 +74,7 @@ public class BleScanner extends AppCompatActivity {
             tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
         }
 
-        //ScanBLEDevices();
+        ScanBLEDevices();
     }
 
     public void saveAddress(View view){
@@ -81,14 +82,16 @@ public class BleScanner extends AppCompatActivity {
         DEVICE_ADDRESS_FILTER = addressView.getText().toString();
         Log.i("Input address", DEVICE_ADDRESS_FILTER);
 
-        /*ContextWrapper contextWrapper = new ContextWrapper(getApplicationContext());
-        File directory = contextWrapper.getDir(getFilesDir().getName(), Context.MODE_PRIVATE);
-        File file =  new File(directory, "addresses.txt");
-        FileOutputStream fos = new FileOutputStream("address.txt", true); // save
-        fos.write(DEVICE_ADDRESS_FILTER.getBytes());
-        fos.close();*/
+        try {
+            FileOutputStream outputStream = openFileOutput("addresses.txt", MODE_APPEND);
+            outputStream.write((DEVICE_ADDRESS_FILTER + "\n").getBytes());
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        ScanBLEDevices();
+        //ScanBLEDevices();  // TODO: need to uncomment later
     }
 
     private void ScanBLEDevices(){
@@ -112,6 +115,10 @@ public class BleScanner extends AppCompatActivity {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
+            if (result.getDevice().getName() != null) {
+                Log.e("Device", result.getDevice().getName());
+                Log.e("Address", result.getDevice().getAddress());
+            }
             if(result.getDevice().getAddress().startsWith(DEVICE_ADDRESS_FILTER)) {
                 String deviceID = result.getDevice().getAddress();
                 int temp = result.getRssi();
