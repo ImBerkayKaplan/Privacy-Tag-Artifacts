@@ -1,4 +1,4 @@
-package com.example.blescreener3;
+package com.example.SPLICEApp;
 
 import android.content.Context;
 

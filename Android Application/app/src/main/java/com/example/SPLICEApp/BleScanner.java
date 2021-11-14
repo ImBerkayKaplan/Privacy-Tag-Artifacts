@@ -1,80 +1,52 @@
-package com.example.blescreener3;
+package com.example.SPLICEApp;
 
-import androidx.annotation.IdRes;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
-    private static HashMap<String, Integer> db = new HashMap<>();
-    //private Handler handler;
+    private static HashMap<String, String> db = new HashMap<>();
+    private String DEVICE_ADDRESS_FILTER = "EF:F3:F2:34:B9:1F";
+    //private String DEVICE_ADDRESS_FILTER = "DA:63:34:EF:9C:66";
+    // "E1:6F:AB:4F:85:25"
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ble_scanner);
-
-        //handler = new Handler(Looper.getMainLooper());
-
         TextView tv = (TextView) findViewById(R.id.NumDevices);
         tv.setText("Devices Found: " + db.size());
 
         // populate UI with stored database
         TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
-        /*if (true) {
-            TableRow tr_head = new TableRow(getApplicationContext());
-
-            TextView MAC_view = new TextView(getApplicationContext());
-            LinearLayout.LayoutParams MAC_params = new TableRow.LayoutParams(
-                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
-            MAC_params.setMargins(0, 1, 1, 1);
-            MAC_view.setLayoutParams(MAC_params);
-            MAC_view.setText("xxx");
-            MAC_view.setTextColor(Color.BLACK);
-            MAC_view.setGravity(Gravity.CENTER);
-            MAC_view.setBackgroundColor(Color.WHITE);
-            tr_head.addView(MAC_view);
-
-            TextView RSSI_view = new TextView(getApplicationContext());
-            LinearLayout.LayoutParams RSSI_params = new TableRow.LayoutParams(
-                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
-            RSSI_params.setMargins(1, 1, 1, 1);
-            RSSI_view.setLayoutParams(RSSI_params);
-            RSSI_view.setText(String.valueOf(-40));
-            RSSI_view.setTextColor(Color.BLACK);
-            RSSI_view.setGravity(Gravity.CENTER);
-            RSSI_view.setBackgroundColor(Color.WHITE);
-            tr_head.addView(RSSI_view);
-
-            tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
-            //tl.addView(tr_head);
-        }*/
-
-
-        for (Map.Entry<String, Integer> entry : db.entrySet()) {
+        for (Map.Entry<String, String> entry : db.entrySet()) {
             TableRow tr_head = new TableRow(getApplicationContext());
 
             TextView MAC_view = new TextView(getApplicationContext());
@@ -105,6 +77,23 @@ public class BleScanner extends AppCompatActivity {
         ScanBLEDevices();
     }
 
+    public void saveAddress(View view){
+        final EditText addressView = (EditText) findViewById(R.id.inputAddress);
+        DEVICE_ADDRESS_FILTER = addressView.getText().toString();
+        Log.i("Input address", DEVICE_ADDRESS_FILTER);
+
+        try {
+            FileOutputStream outputStream = openFileOutput("addresses.txt", MODE_APPEND);
+            outputStream.write((DEVICE_ADDRESS_FILTER + "\n").getBytes());
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //ScanBLEDevices();  // TODO: need to uncomment later
+    }
+
     private void ScanBLEDevices(){
 
         // Prepare the bluetooth adapter and scanner
@@ -126,25 +115,31 @@ public class BleScanner extends AppCompatActivity {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            if(result.getDevice().getAddress().startsWith("AC:23:3F:77:28")) {
+            if (result.getDevice().getName() != null) {
+                Log.e("Device", result.getDevice().getName());
+                Log.e("Address", result.getDevice().getAddress());
+            }
+            if(result.getDevice().getAddress().startsWith(DEVICE_ADDRESS_FILTER)) {
                 String deviceID = result.getDevice().getAddress();
-                int deviceRSSI = result.getRssi();
-                Log.i("TAG", deviceID);
-                Log.i("TAG", String.valueOf(deviceRSSI));
-
+                int temp = result.getRssi();
+                String deviceRSSI = "";
+                if(temp > -50){
+                    deviceRSSI = "Less than 1 meter away";
+                }else if(temp >-60){
+                    deviceRSSI = "Less than 2 meter away";
+                }else{
+                    deviceRSSI = "More than 2 meters away";
+                }
+                String finalDeviceRSSI = deviceRSSI;
                 if (!db.containsKey(deviceID)) {
                     // new device, add row to table
                     db.put(deviceID, deviceRSSI);
-
-
                     runOnUiThread(new Runnable() {
-                        @Override
+                        //@Override
                         public void run() {
                             // update UI for num of devices
                             TextView tv = (TextView) findViewById(R.id.NumDevices);
                             tv.setText("Devices Found: " + db.size());
-
-                            //Log.i("TAG", "Update number of devices");
 
                             // update UI for MAC-RSSI database
                             TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
@@ -156,7 +151,6 @@ public class BleScanner extends AppCompatActivity {
                             MAC_params.setMargins(0, 1, 1, 1);
                             MAC_view.setLayoutParams(MAC_params);
                             MAC_view.setText(deviceID);
-                            //MAC_view.setTextColor(Color.BLACK);
                             MAC_view.setTextColor(Color.parseColor("#000000"));
                             MAC_view.setAlpha(0.54f);
                             MAC_view.setGravity(Gravity.CENTER);
@@ -168,8 +162,7 @@ public class BleScanner extends AppCompatActivity {
                                     TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
                             RSSI_params.setMargins(1, 1, 1, 1);
                             RSSI_view.setLayoutParams(RSSI_params);
-                            RSSI_view.setText(String.valueOf(deviceRSSI));
-                            //RSSI_view.setTextColor(Color.BLACK);
+                            RSSI_view.setText(finalDeviceRSSI);
                             RSSI_view.setTextColor(Color.parseColor("#000000"));
                             RSSI_view.setAlpha(0.54f);
                             RSSI_view.setGravity(Gravity.CENTER);
@@ -177,35 +170,28 @@ public class BleScanner extends AppCompatActivity {
                             tr_head.addView(RSSI_view);
 
                             tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
-
-                            Log.i("TAG", "Update table");
                         }
                     });
 
                 } else {
-                    // existing device, check whether RSSI changes;
-                    if (!db.get(deviceID).equals(deviceRSSI)) {
-                        // RSSI changes
-                        db.put(deviceID, deviceRSSI);
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                // update UI for existing MAC with new RSSI value
-                                TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
-                                for (int i = 0; i < tl.getChildCount(); i++) {
-                                    TableRow tr = (TableRow) tl.getChildAt(i);
-                                    TextView tv1 = (TextView) tr.getChildAt(0);
-                                    TextView tv2 = (TextView) tr.getChildAt(1);
-                                    String curDeviceID = tv1.getText().toString();
-                                    if (curDeviceID.equals(deviceID)) {
-                                        tv2.setText(String.valueOf(deviceRSSI));
-                                    }
+                    db.put(deviceID, deviceRSSI);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // update UI for existing MAC with new RSSI value
+                            TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
+                            for (int i = 0; i < tl.getChildCount(); i++) {
+                                TableRow tr = (TableRow) tl.getChildAt(i);
+                                TextView tv1 = (TextView) tr.getChildAt(0);
+                                TextView tv2 = (TextView) tr.getChildAt(1);
+                                String curDeviceID = tv1.getText().toString();
+                                if (curDeviceID.equals(deviceID)) {
+                                    tv2.setText(finalDeviceRSSI);
                                 }
-                                Log.i("TAG", "Update table");
                             }
-                        });
-                    }
+                        }
+                    });
+
                 }
             }
         }
