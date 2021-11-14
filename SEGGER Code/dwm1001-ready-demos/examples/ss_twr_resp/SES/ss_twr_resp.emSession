@@ -55,7 +55,7 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="106" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../main.c" selected="1" top="74" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="1" y="130" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../main.c" selected="1" top="72" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="23" y="29" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../ss_resp_main.c" selected="0" top="0" codecName="Default"/>
  </Files>
  <ARMCrossStudioWindow activeProject="ss_twr_resp" fileDialogDefaultFilter="*.c;*.cpp;*.cxx;*.cc;*.h;*.hpp;*.hxx" autoConnectTarget="J-Link" buildConfiguration="nrf52832_xxaa" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="C:/Git Repos/SPLICEApp/SEGGER Code/dwm1001-ready-demos/nRF5_SDK_14.2.0/components/toolchain/cmsis/include" debugSearchPath="" autoConnectCapabilities="3711"/>

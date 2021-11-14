@@ -58,7 +58,6 @@ static dwt_config_t config = {
 #define POLL_TX_TO_RESP_RX_DLY_UUS 100 
 
 /*Should be accurately calculated during calibration*/
-#define TX_ANT_DLY 16300
 #define RX_ANT_DLY 16456	
 
 //--------------dw1000---end---------------
@@ -71,37 +70,10 @@ static dwt_config_t config = {
 
 TaskHandle_t  ss_initiator_task_handle;   /**< Reference to SS TWR Initiator FreeRTOS task. */
 extern void ss_initiator_task_function (void * pvParameter);
-TaskHandle_t  led_toggle_task_handle;   /**< Reference to LED0 toggling FreeRTOS task. */
-TimerHandle_t led_toggle_timer_handle;  /**< Reference to LED1 toggling FreeRTOS timer. */
 #endif
 
 #ifdef USE_FREERTOS
 
-/**@brief LED0 task entry function.
- *
- * @param[in] pvParameter   Pointer that will be used as the parameter for the task.
- */
-static void led_toggle_task_function (void * pvParameter)
-{
-  UNUSED_PARAMETER(pvParameter);
-  while (true)
-  {
-    LEDS_INVERT(BSP_LED_0_MASK);
-    /* Delay a task for a given number of ticks */
-    vTaskDelay(TASK_DELAY);
-    /* Tasks must be implemented to never return... */
-  }
-}
-
-/**@brief The function to call when the LED1 FreeRTOS timer expires.
- *
- * @param[in] pvParameter   Pointer that will be used as the parameter for the timer.
- */
-static void led_toggle_timer_callback (void * pvParameter)
-{
-  UNUSED_PARAMETER(pvParameter);
-  LEDS_INVERT(BSP_LED_1_MASK);
-}
 #else
 
   extern int ss_init_run(void);
@@ -110,23 +82,11 @@ static void led_toggle_timer_callback (void * pvParameter)
 
 int main(void)
 {
-  /* Setup some LEDs for debug Green and Blue on DWM1001-DEV */
-  LEDS_CONFIGURE(BSP_LED_0_MASK | BSP_LED_1_MASK | BSP_LED_2_MASK);
-  LEDS_ON(BSP_LED_0_MASK | BSP_LED_1_MASK | BSP_LED_2_MASK );
 
   #ifdef USE_FREERTOS
-    /* Create task for LED0 blinking with priority set to 2 */
-    UNUSED_VARIABLE(xTaskCreate(led_toggle_task_function, "LED0", configMINIMAL_STACK_SIZE + 200, NULL, 2, &led_toggle_task_handle));
-
-    /* Start timer for LED1 blinking */
-    led_toggle_timer_handle = xTimerCreate( "LED1", TIMER_PERIOD, pdTRUE, NULL, led_toggle_timer_callback);
-    UNUSED_VARIABLE(xTimerStart(led_toggle_timer_handle, 0));
-
     /* Create task for SS TWR Initiator set to 2 */
     UNUSED_VARIABLE(xTaskCreate(ss_initiator_task_function, "SSTWR_INIT", configMINIMAL_STACK_SIZE + 200, NULL, 2, &ss_initiator_task_handle));
   #endif // #ifdef USE_FREERTOS
-  
-  //-------------dw1000  ini------------------------------------	
 
   /* Setup DW1000 IRQ pin */  
   nrf_gpio_cfg_input(DW1000_IRQ, NRF_GPIO_PIN_NOPULL); 		//irq
@@ -156,7 +116,7 @@ int main(void)
 
   /* Apply default antenna delay value. See NOTE 2 below. */
   dwt_setrxantennadelay(RX_ANT_DLY);
-  dwt_settxantennadelay(TX_ANT_DLY);
+  dwt_settxantennadelay(16300); // TX_ANT_DLY = 16300
 
   /* Set preamble timeout for expected frames. See NOTE 3 below. */
   //dwt_setpreambledetecttimeout(0); // PRE_TIMEOUT

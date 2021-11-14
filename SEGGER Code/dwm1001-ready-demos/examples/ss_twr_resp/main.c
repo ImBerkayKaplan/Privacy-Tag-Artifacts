@@ -66,57 +66,13 @@ static dwt_config_t config = {
 #ifdef USE_FREERTOS
   TaskHandle_t  ss_responder_task_handle;   /**< Reference to SS TWR Initiator FreeRTOS task. */
   extern void ss_responder_task_function (void * pvParameter);
-  TaskHandle_t  led_toggle_task_handle;   /**< Reference to LED0 toggling FreeRTOS task. */
-  TimerHandle_t led_toggle_timer_handle;  /**< Reference to LED1 toggling FreeRTOS timer. */
 #else
   extern int ss_resp_run(void);
 #endif    // #ifdef USE_FREERTOS
 
-#ifdef USE_FREERTOS
-
-  /**@brief LED0 task entry function.
-  *
-  * @param[in] pvParameter   Pointer that will be used as the parameter for the task.
-  */
-
-  static void led_toggle_task_function (void * pvParameter)
-  {
-    UNUSED_PARAMETER(pvParameter);
-    while (true)
-    {
-      LEDS_INVERT(BSP_LED_0_MASK);
-      /* Delay a task for a given number of ticks */
-      vTaskDelay(TASK_DELAY);
-    /* Tasks must be implemented to never return... */
-    }
-  }
-
-  /**@brief The function to call when the LED1 FreeRTOS timer expires.
-  *
-  * @param[in] pvParameter   Pointer that will be used as the parameter for the timer.
-  */
-  static void led_toggle_timer_callback (void * pvParameter)
-  {
-    UNUSED_PARAMETER(pvParameter);
-    LEDS_INVERT(BSP_LED_1_MASK);
-}
-
-#endif  // #ifdef USE_FREERTOS
-
 int main(void)
 {
-  /* Setup some LEDs for debug Green and Blue on DWM1001-DEV */
-  LEDS_CONFIGURE(BSP_LED_0_MASK | BSP_LED_1_MASK);
-  LEDS_ON(BSP_LED_0_MASK | BSP_LED_1_MASK);
-
   #ifdef USE_FREERTOS
-    /* Create task for LED0 blinking with priority set to 2 */
-    UNUSED_VARIABLE(xTaskCreate(led_toggle_task_function, "LED0", configMINIMAL_STACK_SIZE + 200, NULL, 2, &led_toggle_task_handle));
-
-    /* Start timer for LED1 blinking */
-    led_toggle_timer_handle = xTimerCreate( "LED1", TIMER_PERIOD, pdTRUE, NULL, led_toggle_timer_callback);
-    UNUSED_VARIABLE(xTimerStart(led_toggle_timer_handle, 0));
-
     /* Create task for SS TWR Initiator set to 2 */
     UNUSED_VARIABLE(xTaskCreate(ss_responder_task_function, "SSTWR_RESP", configMINIMAL_STACK_SIZE + 200, NULL, 2, &ss_responder_task_handle)); 
   #endif  // #ifdef USE_FREERTOS
@@ -173,19 +129,4 @@ int main(void)
     }
     #endif  // #ifdef USE_FREERTOS
 }
-
-/*****************************************************************************************************************************************************
-* NOTES:
-*
-* 1. The single-sided two-way ranging scheme implemented here has to be considered carefully as the accuracy of the distance measured is highly
-*    sensitive to the clock offset error between the devices and the length of the response delay between frames. To achieve the best possible
-*    accuracy, this response delay must be kept as low as possible. In order to do so, 6.8 Mbps data rate is used in this example and the response
-*    delay between frames is defined as low as possible. The user is referred to User Manual for more details about the single-sided two-way ranging
-*    process.  NB:SEE ALSO NOTE 3.
-* 2. This is the task delay when using FreeRTOS. Task is delayed a given number of ticks. Useful to be able to define this out to see the effect of the RTOS
-*    on timing.
-* 3. The user is referred to DecaRanging ARM application (distributed with EVK1000 product) for additional practical example of usage, and to the
-*     DW1000 API Guide for more details on the DW1000 driver functions.
-*
-****************************************************************************************************************************************************/
 
