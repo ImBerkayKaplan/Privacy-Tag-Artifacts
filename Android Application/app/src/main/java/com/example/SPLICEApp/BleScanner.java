@@ -32,6 +32,7 @@ import java.util.Map;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
     private static HashMap<String, String> db = new HashMap<>();
+    private String DEVICE_ADDRESS_FILTER = "XX:XX:XX:XX:XX:XX";
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -74,6 +75,22 @@ public class BleScanner extends AppCompatActivity {
         ScanBLEDevices();
     }
 
+    public void saveAddress(View view){
+        final EditText addressView = (EditText) findViewById(R.id.inputAddress);
+        DEVICE_ADDRESS_FILTER = addressView.getText().toString();
+
+        try {
+            FileOutputStream outputStream = openFileOutput("addresses.txt", MODE_APPEND);
+            outputStream.write((DEVICE_ADDRESS_FILTER + "\n").getBytes());
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //ScanBLEDevices();  // TODO: need to uncomment later
+    }
+
     private void ScanBLEDevices(){
 
         // Prepare the bluetooth adapter and scanner
@@ -95,11 +112,7 @@ public class BleScanner extends AppCompatActivity {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            int match = 0;
-            for (int i = 0; i < result.getScanRecord().getBytes().length && i < 25; i++){
-                match += result.getScanRecord().getBytes()[i];
-            }
-            if(match == 117) {
+            if(result.getDevice().getAddress().startsWith(DEVICE_ADDRESS_FILTER)) {
                 String deviceID = result.getDevice().getAddress();
                 int temp = result.getRssi();
                 String deviceRSSI = "";
@@ -176,4 +189,4 @@ public class BleScanner extends AppCompatActivity {
             }
         }
     };
-};
+}
