@@ -32,9 +32,6 @@ import java.util.Map;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
     private static HashMap<String, String> db = new HashMap<>();
-    private String DEVICE_ADDRESS_FILTER = "EF:F3:F2:34:B9:1F";
-    //private String DEVICE_ADDRESS_FILTER = "DA:63:34:EF:9C:66";
-    // "E1:6F:AB:4F:85:25"
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -77,23 +74,6 @@ public class BleScanner extends AppCompatActivity {
         ScanBLEDevices();
     }
 
-    public void saveAddress(View view){
-        final EditText addressView = (EditText) findViewById(R.id.inputAddress);
-        DEVICE_ADDRESS_FILTER = addressView.getText().toString();
-        Log.i("Input address", DEVICE_ADDRESS_FILTER);
-
-        try {
-            FileOutputStream outputStream = openFileOutput("addresses.txt", MODE_APPEND);
-            outputStream.write((DEVICE_ADDRESS_FILTER + "\n").getBytes());
-            outputStream.flush();
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //ScanBLEDevices();  // TODO: need to uncomment later
-    }
-
     private void ScanBLEDevices(){
 
         // Prepare the bluetooth adapter and scanner
@@ -115,11 +95,11 @@ public class BleScanner extends AppCompatActivity {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            if (result.getDevice().getName() != null) {
-                Log.e("Device", result.getDevice().getName());
-                Log.e("Address", result.getDevice().getAddress());
+            int match = 0;
+            for (int i = 0; i < result.getScanRecord().getBytes().length && i < 25; i++){
+                match += result.getScanRecord().getBytes()[i];
             }
-            if(result.getDevice().getAddress().startsWith(DEVICE_ADDRESS_FILTER)) {
+            if(match == 117) {
                 String deviceID = result.getDevice().getAddress();
                 int temp = result.getRssi();
                 String deviceRSSI = "";
@@ -196,4 +176,4 @@ public class BleScanner extends AppCompatActivity {
             }
         }
     };
-}
+};

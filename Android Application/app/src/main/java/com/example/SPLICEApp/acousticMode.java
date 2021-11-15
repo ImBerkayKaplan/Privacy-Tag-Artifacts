@@ -139,24 +139,15 @@ public class acousticMode extends AppCompatActivity implements AdapterView.OnIte
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void sendBeacon(View view) {
-        // TODO: allow select specific tag to trigger sound, pull-down list to select address
-        // TODO: use address.txt, first scan to get the payload to trigger the sound.
         // 9-24
         BluetoothLeAdvertiser advertiser = BluetoothAdapter.getDefaultAdapter()
                 .getBluetoothLeAdvertiser();
-
         ParcelUuid pUuid = new ParcelUuid(UUID.fromString(getString(R.string.ble_uuid)));
-
-        /*byte[] value = new byte[6];
-        for (int i = 0; i < 6; i++) {
-            value[i] = (byte) (0xFF);
-        }*/
 
         byte[] value = new byte[6];
         for (int i = 0; i < 6; i++) {
             value[i] = trigger_by_address.get(address_to_trigger)[i + 9];
         }
-        //byte[] value = trigger_by_address.get(address_to_trigger);
 
         AdvertiseData data = (new AdvertiseData.Builder())
                 .setIncludeDeviceName(true)
@@ -166,7 +157,7 @@ public class acousticMode extends AppCompatActivity implements AdapterView.OnIte
         AdvertiseSettings settings = new AdvertiseSettings.Builder()
                 .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
                 .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_HIGH)
-                .setConnectable( false )
+                .setConnectable(false)
                 .setTimeout(5000)
                 .build();
 
@@ -179,60 +170,11 @@ public class acousticMode extends AppCompatActivity implements AdapterView.OnIte
 
             @Override
             public void onStartFailure(int errorCode) {
-                Log.e( "BLE", "Advertising onStartFailure: " + errorCode);
+                Log.e("BLE", "Advertising onStartFailure: " + errorCode);
                 super.onStartFailure(errorCode);
             }
         };
 
         advertiser.startAdvertising(settings, data, advertisingCallback);
-
-        // For server-client BLE data transfer
-        /* if (!scanning) {
-            // Stops scanning after a predefined scan period.
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    scanning = false;
-                    bluetoothLeScanner.stopScan(bleScanCallback);
-                }
-            }, SCAN_PERIOD);
-
-            scanning = true;
-            bluetoothLeScanner.startScan(bleScanCallback);
-        } else {
-            scanning = false;
-            bluetoothLeScanner.stopScan(bleScanCallback);
-        }*/
     }
-
-    /*private ScanCallback bleScanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            super.onScanResult(callbackType, result);
-            BluetoothDevice device = result.getDevice();
-            BluetoothGatt bluetoothGatt = device.connectGatt(
-                    acousticMode.this, false, bluetoothGattCallback);
-            for (BluetoothGattService gattService : bluetoothGatt.getServices()) {
-                BluetoothGattCharacteristic characteristic = gattService
-                        .getCharacteristics().get(0);
-                byte[] value = new byte[1];
-                value[0] = (byte) (21 & 0xFF);  // this a random data sent to the BLE server.
-                characteristic.setValue(value);
-                bluetoothGatt.writeCharacteristic(characteristic);
-            }  // TODO
-        }
-    };*/
-
-    /*private BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                // successfully connected to the GATT Server
-                gatt.discoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                // disconnected from the GATT Server
-                gatt.close();
-            }
-        }
-    };*/
 }
