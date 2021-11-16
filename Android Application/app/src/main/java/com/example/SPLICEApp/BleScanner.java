@@ -86,7 +86,11 @@ public class BleScanner extends AppCompatActivity {
         }
 
         try {
-            BufferedReader bf = new BufferedReader(new FileReader("addresses.txt"));
+            FileInputStream fis = openFileInput("addresses.txt");
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader bf = new BufferedReader(isr);
+
+            // BufferedReader bf = new BufferedReader(new FileReader("addresses.txt"));
             String line = "";
             while (true) {
                 try {
@@ -97,7 +101,7 @@ public class BleScanner extends AppCompatActivity {
                 }
             }
             bf.close();
-        }catch(Exception e){
+        } catch(Exception e){
             e.printStackTrace();
         }
 
