@@ -91,7 +91,6 @@ public class BleScanner extends AppCompatActivity {
             while (true) {
                 try {
                     if (!((line = bf.readLine()) != null)) break;
-                    Log.e("Stored addresses", line);
                     stored_addresses.add(line);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -214,13 +213,15 @@ public class BleScanner extends AppCompatActivity {
                             // Determine if the incoming beacon is from acoustic or UWB board
                             byte[] beacon = result.getScanRecord().getBytes();
                             int ble_or_uwb = 0;
-                            for(int i = 0; i < beacon.length; i++){
+                            for(int i = 0; i < beacon.length && i < 25; i++){
                                 Log.d("Beacon: ", "" + beacon[i]);
                                 ble_or_uwb += beacon[i];
                             }
-                            Log.d("Beacon: ", "" + ble_or_uwb);
-                            if (true){
+                            Log.d("Number: ", "" + ble_or_uwb);
+                            if (ble_or_uwb == 117){
                                 trigger_button.setText("Activate Sound");
+                            }else {
+                                trigger_button.setText("Activate UWB");
                             }
 
                             trigger_button.setAlpha(0.54f);
