@@ -19,7 +19,7 @@ public class NfcScanner extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.nfc_scanner);
+        setContentView(R.layout.inventory_screen);
         tv = (TextView) findViewById(R.id.DeviceURL);
         ScanNFCDevices();
     }

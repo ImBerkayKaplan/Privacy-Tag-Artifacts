@@ -64,15 +64,6 @@ public class acousticMode extends AppCompatActivity implements AdapterView.OnIte
 
     AdvertisingSet currentAdvertisingSet;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_acoustic_mode);
-
-        spinner = (Spinner) findViewById(R.id.address_spinner);
-        spinner.setOnItemSelectedListener(this);
-    }
-
     public void scanDevices(View view) throws IOException {
         // Remove previously scanned device addresses
         addresses_to_scan.clear();

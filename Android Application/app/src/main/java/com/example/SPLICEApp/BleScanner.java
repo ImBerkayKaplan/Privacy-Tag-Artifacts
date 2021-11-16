@@ -4,41 +4,53 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.AdvertiseCallback;
+import android.bluetooth.le.AdvertiseData;
+import android.bluetooth.le.AdvertiseSettings;
+import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
     private static HashMap<String, String> db = new HashMap<>();
     private String DEVICE_ADDRESS_FILTER = "XX:XX:XX:XX:XX:XX";
+    private HashSet<String> stored_addresses = new HashSet<>();
+    private HashMap<View, byte[]> trigger_by_address = new HashMap<>();
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.ble_scanner);
+        setContentView(R.layout.location_screen);
         TextView tv = (TextView) findViewById(R.id.NumDevices);
         tv.setText("Devices Found: " + db.size());
 
@@ -72,12 +84,32 @@ public class BleScanner extends AppCompatActivity {
             tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
         }
 
+        FileInputStream fis = null;
+        try {
+            fis = openFileInput("addresses.txt");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        InputStreamReader isr = new InputStreamReader(fis);
+        BufferedReader bufferedReader = new BufferedReader(isr);
+        String line = "";
+        while (true) {
+            try {
+                if (!((line = bufferedReader.readLine()) != null)) break;
+                Log.e("Stored addresses", line);
+                stored_addresses.add(line);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         ScanBLEDevices();
     }
 
     public void saveAddress(View view){
         final EditText addressView = (EditText) findViewById(R.id.inputAddress);
         DEVICE_ADDRESS_FILTER = addressView.getText().toString();
+        stored_addresses.add(DEVICE_ADDRESS_FILTER);
 
         try {
             FileOutputStream outputStream = openFileOutput("addresses.txt", MODE_APPEND);
@@ -89,6 +121,17 @@ public class BleScanner extends AppCompatActivity {
         }
 
         //ScanBLEDevices();  // TODO: need to uncomment later
+    }
+
+    public void removeAddresses(View view) {
+        try {
+            FileOutputStream outputStream = openFileOutput("addresses.txt", MODE_PRIVATE);
+            outputStream.write(("").getBytes());
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void ScanBLEDevices(){
@@ -112,8 +155,11 @@ public class BleScanner extends AppCompatActivity {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            if(result.getDevice().getAddress().startsWith(DEVICE_ADDRESS_FILTER)) {
+            if (stored_addresses.contains(result.getDevice().getAddress())) {
                 String deviceID = result.getDevice().getAddress();
+
+
+                // infers distance by RSSI
                 int temp = result.getRssi();
                 String deviceRSSI = "";
                 if(temp > -50){
@@ -162,7 +208,25 @@ public class BleScanner extends AppCompatActivity {
                             RSSI_view.setBackgroundColor(Color.WHITE);
                             tr_head.addView(RSSI_view);
 
+                            Button trigger_button = new Button(getApplicationContext());
+                            LinearLayout.LayoutParams trigger_params = new TableRow.LayoutParams(
+                                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
+                            trigger_button.setLayoutParams(trigger_params);
+                            trigger_button.setText("Activate Sound");
+                            trigger_button.setAlpha(0.54f);
+                            trigger_button.setGravity(Gravity.CENTER);
+                            trigger_button.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    sendBeacon(v);
+                                    Log.e("action", "clicked");
+                                }
+                            });
+                            trigger_button.setBackgroundColor(Color.GREEN);
+                            tr_head.addView(trigger_button);
+
                             tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
+                            trigger_by_address.put(trigger_button, result.getScanRecord().getBytes());
                         }
                     });
 
@@ -189,4 +253,45 @@ public class BleScanner extends AppCompatActivity {
             }
         }
     };
+
+    public void sendBeacon(View view) {
+        BluetoothLeAdvertiser advertiser = BluetoothAdapter.getDefaultAdapter()
+                .getBluetoothLeAdvertiser();
+        ParcelUuid pUuid = new ParcelUuid(UUID.fromString(getString(R.string.ble_uuid)));
+
+        Log.e("trigger word", Arrays.toString(trigger_by_address.get(view)));
+
+        byte[] value = new byte[6];
+        for (int i = 0; i < 6; i++) {
+            value[i] = trigger_by_address.get(view)[i + 9];
+        }
+
+        AdvertiseData data = (new AdvertiseData.Builder())
+                .setIncludeDeviceName(true)
+                .addServiceData(pUuid, value)
+                .build();
+
+        AdvertiseSettings settings = new AdvertiseSettings.Builder()
+                .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
+                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_HIGH)
+                .setConnectable(false)
+                .setTimeout(5000)
+                .build();
+
+        AdvertiseCallback advertisingCallback = new AdvertiseCallback() {
+            @Override
+            public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+                super.onStartSuccess(settingsInEffect);
+                Log.d("BLE", "Advertising started");
+            }
+
+            @Override
+            public void onStartFailure(int errorCode) {
+                Log.e("BLE", "Advertising onStartFailure: " + errorCode);
+                super.onStartFailure(errorCode);
+            }
+        };
+
+        advertiser.startAdvertising(settings, data, advertisingCallback);
+    }
 }
