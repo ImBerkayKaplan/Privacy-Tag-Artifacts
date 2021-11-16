@@ -211,28 +211,32 @@ public class BleScanner extends AppCompatActivity {
                                     TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
                             trigger_button.setLayoutParams(trigger_params);
                             // Determine if the incoming beacon is from acoustic or UWB board
+
                             byte[] beacon = result.getScanRecord().getBytes();
-                            int ble_or_uwb = 0;
+                            int acoustics_or_uwb = 0;
                             for(int i = 0; i < beacon.length && i < 25; i++){
                                 Log.d("Beacon: ", "" + beacon[i]);
-                                ble_or_uwb += beacon[i];
+                                acoustics_or_uwb += beacon[i];
                             }
-                            Log.d("Number: ", "" + ble_or_uwb);
-                            if (ble_or_uwb == 117){
+                            if (acoustics_or_uwb == 117){
                                 trigger_button.setText("Activate Sound");
+                                trigger_button.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        sendBeacon(v);
+                                    }
+                                });
                             }else {
-                                trigger_button.setText("Activate UWB");
+                                trigger_button.setText("Activate UWB");                            
+                                trigger_button.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                    }
+                                });
                             }
 
                             trigger_button.setAlpha(0.54f);
                             trigger_button.setGravity(Gravity.CENTER);
-                            trigger_button.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    sendBeacon(v);
-                                    Log.e("action", "clicked");
-                                }
-                            });
                             trigger_button.setBackgroundColor(Color.GREEN);
                             tr_head.addView(trigger_button);
 
