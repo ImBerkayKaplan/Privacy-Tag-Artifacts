@@ -31,6 +31,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
@@ -84,23 +85,21 @@ public class BleScanner extends AppCompatActivity {
             tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
         }
 
-        FileInputStream fis = null;
         try {
-            fis = openFileInput("addresses.txt");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        InputStreamReader isr = new InputStreamReader(fis);
-        BufferedReader bufferedReader = new BufferedReader(isr);
-        String line = "";
-        while (true) {
-            try {
-                if (!((line = bufferedReader.readLine()) != null)) break;
-                Log.e("Stored addresses", line);
-                stored_addresses.add(line);
-            } catch (IOException e) {
-                e.printStackTrace();
+            BufferedReader bf = new BufferedReader(new FileReader("addresses.txt"));
+            String line = "";
+            while (true) {
+                try {
+                    if (!((line = bf.readLine()) != null)) break;
+                    Log.e("Stored addresses", line);
+                    stored_addresses.add(line);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+            bf.close();
+        }catch(Exception e){
+            e.printStackTrace();
         }
 
         ScanBLEDevices();
@@ -212,7 +211,18 @@ public class BleScanner extends AppCompatActivity {
                             LinearLayout.LayoutParams trigger_params = new TableRow.LayoutParams(
                                     TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
                             trigger_button.setLayoutParams(trigger_params);
-                            trigger_button.setText("Activate Sound");
+                            // Determine if the incoming beacon is from acoustic or UWB board
+                            byte[] beacon = result.getScanRecord().getBytes();
+                            int ble_or_uwb = 0;
+                            for(int i = 0; i < beacon.length; i++){
+                                Log.d("Beacon: ", "" + beacon[i]);
+                                ble_or_uwb += beacon[i];
+                            }
+                            Log.d("Beacon: ", "" + ble_or_uwb);
+                            if (true){
+                                trigger_button.setText("Activate Sound");
+                            }
+
                             trigger_button.setAlpha(0.54f);
                             trigger_button.setGravity(Gravity.CENTER);
                             trigger_button.setOnClickListener(new View.OnClickListener() {
