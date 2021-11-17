@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.Gravity;
@@ -35,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,9 +46,43 @@ import java.util.UUID;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
     private static HashMap<String, String> db = new HashMap<>();
-    private String DEVICE_ADDRESS_FILTER = "XX:XX:XX:XX:XX:XX";
+    private String DEVICE_ADDRESS_FILTER = "XX:XX:XX:XX:XX:XX";  // E1:6F:AB:4F:85:25
     private HashSet<String> stored_addresses = new HashSet<>();
     private HashMap<View, byte[]> trigger_by_address = new HashMap<>();
+
+    private HashMap<String, Long> last_scanned_time_by_address = new HashMap<>();
+    private Handler handler = new Handler();
+    private Runnable remove_older_address_thread = new Runnable() {
+        @Override
+        public void run() {
+            long current_time = System.currentTimeMillis();
+            ArrayList<String> addresses_to_remove = new ArrayList<>();
+            for (Map.Entry<String, Long> entry : last_scanned_time_by_address.entrySet()) {
+                String address = entry.getKey();
+                long last_scanned_time = entry.getValue();
+                if (current_time - last_scanned_time > 10000) {
+                    Log.e("Remove", address);
+                    db.remove(address);
+                    addresses_to_remove.add(address);
+                }
+            }
+
+            TableLayout table = (TableLayout) findViewById(R.id.MAC_RSSI);
+            for (String address : addresses_to_remove) {
+                last_scanned_time_by_address.remove(address);
+                for (int i = 1, j = table.getChildCount(); i < j; i++) {
+                    TableRow row = (TableRow) (table.getChildAt(i));
+                    if (((TextView) row.getChildAt(0)).getText().equals(address)) {
+                        table.removeView(row);
+                    }
+                }
+            }
+            TextView tv = (TextView) findViewById(R.id.NumDevices);
+            tv.setText("Devices Found: " + db.size());
+
+            handler.postDelayed(this, 10000);
+        }
+    };
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -57,7 +93,7 @@ public class BleScanner extends AppCompatActivity {
         tv.setText("Devices Found: " + db.size());
 
         // populate UI with stored database
-        TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
+        /*TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
         for (Map.Entry<String, String> entry : db.entrySet()) {
             TableRow tr_head = new TableRow(getApplicationContext());
 
@@ -84,7 +120,7 @@ public class BleScanner extends AppCompatActivity {
             tr_head.addView(RSSI_view);
 
             tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
-        }
+        }*/
 
         File file = getFileStreamPath("addresses.txt");
         if (file != null && file.exists()) {
@@ -112,6 +148,7 @@ public class BleScanner extends AppCompatActivity {
         }
 
         ScanBLEDevices();
+        handler.post(remove_older_address_thread);
     }
 
     public void saveAddress(View view){
@@ -165,7 +202,7 @@ public class BleScanner extends AppCompatActivity {
             super.onScanResult(callbackType, result);
             if (stored_addresses.contains(result.getDevice().getAddress())) {
                 String deviceID = result.getDevice().getAddress();
-
+                last_scanned_time_by_address.put(deviceID, System.currentTimeMillis());
 
                 // infers distance by RSSI
                 int temp = result.getRssi();
