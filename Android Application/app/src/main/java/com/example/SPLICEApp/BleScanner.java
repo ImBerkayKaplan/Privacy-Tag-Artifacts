@@ -28,6 +28,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -85,27 +86,32 @@ public class BleScanner extends AppCompatActivity {
             tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
         }
 
-        try {
-            FileInputStream fis = openFileInput("addresses.txt");
-            InputStreamReader isr = new InputStreamReader(fis);
-            BufferedReader bf = new BufferedReader(isr);
+        File file = getFileStreamPath("addresses.txt");
+        if (file != null && file.exists()) {
+            
+            try {
+                FileInputStream fis = openFileInput("addresses.txt");
+                InputStreamReader isr = new InputStreamReader(fis);
+                BufferedReader bf = new BufferedReader(isr);
 
-            // BufferedReader bf = new BufferedReader(new FileReader("addresses.txt"));
-            String line = "";
-            while (true) {
-                try {
-                    if (!((line = bf.readLine()) != null)) break;
-                    stored_addresses.add(line);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                // BufferedReader bf = new BufferedReader(new FileReader("addresses.txt"));
+                String line = "";
+                while (true) {
+                    try {
+                        if (!((line = bf.readLine()) != null)) break;
+                        Log.i("Address", line);
+                        stored_addresses.add(line);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
+                bf.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            bf.close();
-        } catch(Exception e){
-            e.printStackTrace();
         }
 
-        ScanBLEDevices();
+        // ScanBLEDevices();
     }
 
     public void saveAddress(View view){
