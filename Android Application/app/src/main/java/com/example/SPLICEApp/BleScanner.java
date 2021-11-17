@@ -88,7 +88,7 @@ public class BleScanner extends AppCompatActivity {
 
         File file = getFileStreamPath("addresses.txt");
         if (file != null && file.exists()) {
-            
+
             try {
                 FileInputStream fis = openFileInput("addresses.txt");
                 InputStreamReader isr = new InputStreamReader(fis);
@@ -111,7 +111,7 @@ public class BleScanner extends AppCompatActivity {
             }
         }
 
-        // ScanBLEDevices();
+        ScanBLEDevices();
     }
 
     public void saveAddress(View view){
