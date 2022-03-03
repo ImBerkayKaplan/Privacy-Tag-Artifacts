@@ -113,10 +113,10 @@ public class BleScanner extends AppCompatActivity {
             int our_beacon = 0;
             for(int i = 0; i < beacon.length && i < 25; i++){
                 our_beacon += beacon[i];
-                Log.e("Beacon:", String.valueOf(beacon[i]));
+                //Log.e("Beacon:", String.valueOf(beacon[i]));
             }
-            Log.e("Our Beacon Sum:", String.valueOf(our_beacon));
-            if(our_beacon != 117) return;
+            //Log.e("Our Beacon Sum:", String.valueOf(our_beacon));
+            if(our_beacon != 797) return;
 
             // Obtain the address of the device, and keep a record of when it was received
             String deviceID = result.getDevice().getAddress();
@@ -134,11 +134,11 @@ public class BleScanner extends AppCompatActivity {
             }
             String finalDeviceRSSI = deviceRSSI;
 
-
             if (!db.containsKey(deviceID)) {
                 // new device, add row to table
                 db.put(deviceID, deviceRSSI);
                 //@Override
+                int finalOur_beacon = our_beacon;
                 runOnUiThread(() -> {
                     // update UI for num of devices
                     TextView tv = findViewById(R.id.NumDevices);
@@ -175,27 +175,23 @@ public class BleScanner extends AppCompatActivity {
                     trigger_button.setLayoutParams(trigger_params);
 
                     // Determine if the incoming beacon is from acoustic or UWB board
-                    int acoustics_or_uwb = 0;
-                    for(int i = 0; i < beacon.length && i < 25; i++){
-                            acoustics_or_uwb += beacon[i];
+                    if (finalOur_beacon == 797 && db.size() != 3){
+                        trigger_button.setText(R.string.activate_sound);
+                        trigger_button.setOnClickListener(v -> sendBeacon(v));
+                    }else {
+                        trigger_button.setText(R.string.activate_uwb);
+                        trigger_button.setOnClickListener(v -> {
+                        });
                     }
-                        if (acoustics_or_uwb == 117){
-                            trigger_button.setText(R.string.activate_sound);
-                            trigger_button.setOnClickListener(v -> sendBeacon(v));
-                        }else {
-                            trigger_button.setText(R.string.activate_uwb);
-                            trigger_button.setOnClickListener(v -> {
-                            });
-                        }
 
-                        trigger_button.setAlpha(0.54f);
-                        trigger_button.setGravity(Gravity.CENTER);
-                        trigger_button.setBackgroundColor(Color.GREEN);
-                        tr_head.addView(trigger_button);
+                    trigger_button.setAlpha(0.54f);
+                    trigger_button.setGravity(Gravity.CENTER);
+                    trigger_button.setBackgroundColor(Color.GREEN);
+                    tr_head.addView(trigger_button);
 
-                        tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
-                        trigger_by_address.put(trigger_button, result.getScanRecord().getBytes());
-                    });
+                    tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
+                    trigger_by_address.put(trigger_button, result.getScanRecord().getBytes());
+                });
 
                 } else {
                     db.put(deviceID, deviceRSSI);
