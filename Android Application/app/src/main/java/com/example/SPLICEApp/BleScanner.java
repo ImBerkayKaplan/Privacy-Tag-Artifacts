@@ -22,37 +22,27 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
-    private static HashMap<String, String> db = new HashMap<>();
-    private String DEVICE_ADDRESS_FILTER = "XX:XX:XX:XX:XX:XX";  // E1:6F:AB:4F:85:25
-    private HashSet<String> stored_addresses = new HashSet<>();
-    private HashMap<View, byte[]> trigger_by_address = new HashMap<>();
 
-    private HashMap<String, Long> last_scanned_time_by_address = new HashMap<>();
-    private Handler handler = new Handler();
-    private Runnable remove_older_address_thread = new Runnable() {
+    private static final HashMap<String, String> db = new HashMap<>();
+    private final HashMap<View, byte[]> trigger_by_address = new HashMap<>();
+
+    private final HashMap<String, Long> last_scanned_time_by_address = new HashMap<>();
+    private final Handler handler = new Handler();
+    private final Runnable remove_older_address_thread = new Runnable() {
         @Override
         public void run() {
             long current_time = System.currentTimeMillis();
@@ -78,7 +68,7 @@ public class BleScanner extends AppCompatActivity {
                 }
             }
             TextView tv = (TextView) findViewById(R.id.NumDevices);
-            tv.setText("Devices Found: " + db.size());
+            tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
 
             handler.postDelayed(this, 10000);
         }
@@ -90,93 +80,10 @@ public class BleScanner extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.location_screen);
         TextView tv = (TextView) findViewById(R.id.NumDevices);
-        tv.setText("Devices Found: " + db.size());
-
-        // populate UI with stored database
-        /*TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
-        for (Map.Entry<String, String> entry : db.entrySet()) {
-            TableRow tr_head = new TableRow(getApplicationContext());
-
-            TextView MAC_view = new TextView(getApplicationContext());
-            LinearLayout.LayoutParams MAC_params = new TableRow.LayoutParams(
-                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
-            MAC_params.setMargins(0, 1, 1, 1);
-            MAC_view.setLayoutParams(MAC_params);
-            MAC_view.setText(entry.getKey());
-            MAC_view.setTextColor(Color.BLACK);
-            MAC_view.setGravity(Gravity.CENTER);
-            MAC_view.setBackgroundColor(Color.WHITE);
-            tr_head.addView(MAC_view);
-
-            TextView RSSI_view = new TextView(getApplicationContext());
-            LinearLayout.LayoutParams RSSI_params = new TableRow.LayoutParams(
-                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
-            RSSI_params.setMargins(1, 1, 1, 1);
-            RSSI_view.setLayoutParams(RSSI_params);
-            RSSI_view.setText(String.valueOf(entry.getValue()));
-            RSSI_view.setTextColor(Color.BLACK);
-            RSSI_view.setGravity(Gravity.CENTER);
-            RSSI_view.setBackgroundColor(Color.WHITE);
-            tr_head.addView(RSSI_view);
-
-            tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
-        }*/
-
-        File file = getFileStreamPath("addresses.txt");
-        if (file != null && file.exists()) {
-
-            try {
-                FileInputStream fis = openFileInput("addresses.txt");
-                InputStreamReader isr = new InputStreamReader(fis);
-                BufferedReader bf = new BufferedReader(isr);
-
-                // BufferedReader bf = new BufferedReader(new FileReader("addresses.txt"));
-                String line = "";
-                while (true) {
-                    try {
-                        if (!((line = bf.readLine()) != null)) break;
-                        Log.i("Address", line);
-                        stored_addresses.add(line);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                bf.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
 
         ScanBLEDevices();
         handler.post(remove_older_address_thread);
-    }
-
-    public void saveAddress(View view){
-        final EditText addressView = (EditText) findViewById(R.id.inputAddress);
-        DEVICE_ADDRESS_FILTER = addressView.getText().toString();
-        stored_addresses.add(DEVICE_ADDRESS_FILTER);
-
-        try {
-            FileOutputStream outputStream = openFileOutput("addresses.txt", MODE_APPEND);
-            outputStream.write((DEVICE_ADDRESS_FILTER + "\n").getBytes());
-            outputStream.flush();
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //ScanBLEDevices();  // TODO: need to uncomment later
-    }
-
-    public void removeAddresses(View view) {
-        try {
-            FileOutputStream outputStream = openFileOutput("addresses.txt", MODE_PRIVATE);
-            outputStream.write(("").getBytes());
-            outputStream.flush();
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void ScanBLEDevices(){
@@ -196,136 +103,126 @@ public class BleScanner extends AppCompatActivity {
     }
 
     // BLE Device scan callback.
-    private ScanCallback bleScanCallback = new ScanCallback() {
+    private final ScanCallback bleScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            if (stored_addresses.contains(result.getDevice().getAddress())) {
-                String deviceID = result.getDevice().getAddress();
-                last_scanned_time_by_address.put(deviceID, System.currentTimeMillis());
 
-                // infers distance by RSSI
-                int temp = result.getRssi();
-                String deviceRSSI = "";
-                if(temp > -50){
-                    deviceRSSI = "Less than 1 meter away";
-                }else if(temp >-60){
-                    deviceRSSI = "Less than 2 meter away";
-                }else{
-                    deviceRSSI = "More than 2 meters away";
-                }
-                String finalDeviceRSSI = deviceRSSI;
-                if (!db.containsKey(deviceID)) {
-                    // new device, add row to table
-                    db.put(deviceID, deviceRSSI);
-                    runOnUiThread(new Runnable() {
-                        //@Override
-                        public void run() {
-                            // update UI for num of devices
-                            TextView tv = (TextView) findViewById(R.id.NumDevices);
-                            tv.setText("Devices Found: " + db.size());
+            // Remove all beacons that don't conform to our standards
+            byte[] beacon = result.getScanRecord().getBytes();
+            int our_beacon = 0;
+            for(int i = 0; i < beacon.length && i < 25; i++){
+                our_beacon += beacon[i];
+                Log.e("Beacon:", String.valueOf(beacon[i]));
+            }
+            Log.e("Our Beacon Sum:", String.valueOf(our_beacon));
+            if(our_beacon != 117) return;
 
-                            // update UI for MAC-RSSI database
-                            TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
-                            TableRow tr_head = new TableRow(getApplicationContext());
+            // Obtain the address of the device, and keep a record of when it was received
+            String deviceID = result.getDevice().getAddress();
+            last_scanned_time_by_address.put(deviceID, System.currentTimeMillis());
 
-                            TextView MAC_view = new TextView(getApplicationContext());
-                            LinearLayout.LayoutParams MAC_params = new TableRow.LayoutParams(
-                                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
-                            MAC_params.setMargins(0, 1, 1, 1);
-                            MAC_view.setLayoutParams(MAC_params);
-                            MAC_view.setText(deviceID);
-                            MAC_view.setTextColor(Color.parseColor("#000000"));
-                            MAC_view.setAlpha(0.54f);
-                            MAC_view.setGravity(Gravity.CENTER);
-                            MAC_view.setBackgroundColor(Color.WHITE);
-                            tr_head.addView(MAC_view);
+            // infers distance by RSSI
+            int temp = result.getRssi();
+            String deviceRSSI;
+            if(temp > -50){
+                deviceRSSI = "Less than 1 meter away";
+            }else if(temp >-60){
+                deviceRSSI = "Less than 2 meter away";
+            }else{
+                deviceRSSI = "More than 2 meters away";
+            }
+            String finalDeviceRSSI = deviceRSSI;
 
-                            TextView RSSI_view = new TextView(getApplicationContext());
-                            LinearLayout.LayoutParams RSSI_params = new TableRow.LayoutParams(
-                                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
-                            RSSI_params.setMargins(1, 1, 1, 1);
-                            RSSI_view.setLayoutParams(RSSI_params);
-                            RSSI_view.setText(finalDeviceRSSI);
-                            RSSI_view.setTextColor(Color.parseColor("#000000"));
-                            RSSI_view.setAlpha(0.54f);
-                            RSSI_view.setGravity(Gravity.CENTER);
-                            RSSI_view.setBackgroundColor(Color.WHITE);
-                            tr_head.addView(RSSI_view);
 
-                            Button trigger_button = new Button(getApplicationContext());
-                            LinearLayout.LayoutParams trigger_params = new TableRow.LayoutParams(
-                                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
-                            trigger_button.setLayoutParams(trigger_params);
-                            // Determine if the incoming beacon is from acoustic or UWB board
+            if (!db.containsKey(deviceID)) {
+                // new device, add row to table
+                db.put(deviceID, deviceRSSI);
+                //@Override
+                runOnUiThread(() -> {
+                    // update UI for num of devices
+                    TextView tv = (TextView) findViewById(R.id.NumDevices);
+                    tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
 
-                            byte[] beacon = result.getScanRecord().getBytes();
-                            int acoustics_or_uwb = 0;
-                            for(int i = 0; i < beacon.length && i < 25; i++){
-                                Log.d("Beacon: ", "" + beacon[i]);
-                                acoustics_or_uwb += beacon[i];
-                            }
-                            if (acoustics_or_uwb == 117){
-                                trigger_button.setText("Activate Sound");
-                                trigger_button.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        sendBeacon(v);
-                                    }
-                                });
-                            }else {
-                                trigger_button.setText("Activate UWB");                            
-                                trigger_button.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                    }
-                                });
-                            }
+                    // update UI for MAC-RSSI database
+                    TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
+                    TableRow tr_head = new TableRow(getApplicationContext());
 
-                            trigger_button.setAlpha(0.54f);
-                            trigger_button.setGravity(Gravity.CENTER);
-                            trigger_button.setBackgroundColor(Color.GREEN);
-                            tr_head.addView(trigger_button);
+                    TextView MAC_view = new TextView(getApplicationContext());
+                    LinearLayout.LayoutParams MAC_params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
+                    MAC_params.setMargins(0, 1, 1, 1);
+                    MAC_view.setLayoutParams(MAC_params);
+                    MAC_view.setText(deviceID);
+                    MAC_view.setTextColor(Color.parseColor("#000000"));
+                    MAC_view.setAlpha(0.54f);
+                    MAC_view.setGravity(Gravity.CENTER);
+                    MAC_view.setBackgroundColor(Color.WHITE);
+                    tr_head.addView(MAC_view);
 
-                            tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
-                            trigger_by_address.put(trigger_button, result.getScanRecord().getBytes());
+                    TextView RSSI_view = new TextView(getApplicationContext());
+                    LinearLayout.LayoutParams RSSI_params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
+                    RSSI_params.setMargins(1, 1, 1, 1);
+                    RSSI_view.setLayoutParams(RSSI_params);
+                    RSSI_view.setText(finalDeviceRSSI);
+                    RSSI_view.setTextColor(Color.parseColor("#000000"));
+                    RSSI_view.setAlpha(0.54f);
+                    RSSI_view.setGravity(Gravity.CENTER);
+                    RSSI_view.setBackgroundColor(Color.WHITE);
+                    tr_head.addView(RSSI_view);
+
+                    Button trigger_button = new Button(getApplicationContext());
+                    LinearLayout.LayoutParams trigger_params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
+                    trigger_button.setLayoutParams(trigger_params);
+
+                    // Determine if the incoming beacon is from acoustic or UWB board
+                    int acoustics_or_uwb = 0;
+                    for(int i = 0; i < beacon.length && i < 25; i++){
+                            acoustics_or_uwb += beacon[i];
+                    }
+                        if (acoustics_or_uwb == 117){
+                            trigger_button.setText("Activate Sound");
+                            trigger_button.setOnClickListener(v -> sendBeacon(v));
+                        }else {
+                            trigger_button.setText("Activate UWB");
+                            trigger_button.setOnClickListener(v -> {
+                            });
                         }
+
+                        trigger_button.setAlpha(0.54f);
+                        trigger_button.setGravity(Gravity.CENTER);
+                        trigger_button.setBackgroundColor(Color.GREEN);
+                        tr_head.addView(trigger_button);
+
+                        tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
+                        trigger_by_address.put(trigger_button, result.getScanRecord().getBytes());
                     });
 
                 } else {
                     db.put(deviceID, deviceRSSI);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            // update UI for existing MAC with new RSSI value
-                            TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
-                            for (int i = 0; i < tl.getChildCount(); i++) {
-                                TableRow tr = (TableRow) tl.getChildAt(i);
-                                TextView tv1 = (TextView) tr.getChildAt(0);
-                                TextView tv2 = (TextView) tr.getChildAt(1);
-                                String curDeviceID = tv1.getText().toString();
-                                if (curDeviceID.equals(deviceID)) {
-                                    tv2.setText(finalDeviceRSSI);
-                                }
+                    runOnUiThread(() -> {
+                        // update UI for existing MAC with new RSSI value
+                        TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
+                        for (int i = 0; i < tl.getChildCount(); i++) {
+                            TableRow tr = (TableRow) tl.getChildAt(i);
+                            TextView tv1 = (TextView) tr.getChildAt(0);
+                            TextView tv2 = (TextView) tr.getChildAt(1);
+                            String curDeviceID = tv1.getText().toString();
+                            if (curDeviceID.equals(deviceID)) {
+                                tv2.setText(finalDeviceRSSI);
                             }
                         }
                     });
-
-                }
             }
         }
     };
 
     public void sendBeacon(View view) {
-        BluetoothLeAdvertiser advertiser = BluetoothAdapter.getDefaultAdapter()
-                .getBluetoothLeAdvertiser();
+        BluetoothLeAdvertiser advertiser = BluetoothAdapter.getDefaultAdapter().getBluetoothLeAdvertiser();
         ParcelUuid pUuid = new ParcelUuid(UUID.fromString(getString(R.string.ble_uuid)));
-
-        Log.e("trigger word", Arrays.toString(trigger_by_address.get(view)));
 
         byte[] value = new byte[6];
         for (int i = 0; i < 6; i++) {
-            value[i] = trigger_by_address.get(view)[i + 9];
+            value[i] = Objects.requireNonNull(trigger_by_address.get(view))[i + 9];
         }
 
         AdvertiseData data = (new AdvertiseData.Builder())
@@ -353,7 +250,6 @@ public class BleScanner extends AppCompatActivity {
                 super.onStartFailure(errorCode);
             }
         };
-
         advertiser.startAdvertising(settings, data, advertisingCallback);
     }
 }

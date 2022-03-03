@@ -23,7 +23,7 @@
         android:id="@+id/NumDevices"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="144dp"
+        android:layout_marginTop="96dp"
         android:background="@color/white"
         android:gravity="center"
         android:text="Devices Found: 0"
@@ -37,29 +37,30 @@
         android:id="@+id/MAC_RSSI"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/NumDevices"
+        android:layout_marginTop="48dp"
         android:background="#f1f1f1"
-        >
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/NumDevices">
 
         <TableRow>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="MAC"
-                android:textStyle="bold"
-                android:layout_weight="1"
-                android:gravity="center"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Distance"
-                android:textStyle="bold"
                 android:layout_weight="1"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:text="MAC"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Distance"
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -73,45 +74,5 @@
 
 
     </TableLayout>
-
-    <EditText
-        android:id="@+id/inputAddress"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginLeft="50dp"
-        android:layout_marginTop="60dp"
-        android:layout_marginEnd="105dp"
-        android:layout_marginRight="105dp"
-        android:hint="Input device MAC"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/storeAddress"
-        android:layout_width="128dp"
-        android:layout_height="33dp"
-        android:layout_marginStart="264dp"
-        android:layout_marginLeft="264dp"
-        android:layout_marginTop="36dp"
-        android:onClick="saveAddress"
-        android:text="Submit Address"
-        android:textSize="12dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/locationModeTitle" />
-
-    <Button
-        android:id="@+id/removeAddresses"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="172dp"
-        android:layout_marginRight="172dp"
-        android:onClick="removeAddresses"
-        android:text="Clear addresses"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/storeAddress" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
