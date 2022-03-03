@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.MessageFormat;
+
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class NfcScanner extends AppCompatActivity {
     TextView tv;
@@ -20,7 +22,7 @@ public class NfcScanner extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.inventory_screen);
-        tv = (TextView) findViewById(R.id.DeviceURL);
+        tv = findViewById(R.id.DeviceURL);
         ScanNFCDevices();
     }
 
@@ -44,7 +46,7 @@ public class NfcScanner extends AppCompatActivity {
     }
 
     // NFC tag scan callback
-    private NfcAdapter.ReaderCallback nfcScanCallback = new NfcAdapter.ReaderCallback(){
+    private final NfcAdapter.ReaderCallback nfcScanCallback = new NfcAdapter.ReaderCallback(){
         @Override
         public void onTagDiscovered(Tag tag) {
             Ndef ndef = Ndef.get(tag);
@@ -53,12 +55,9 @@ public class NfcScanner extends AppCompatActivity {
                 NdefMessage ndefMessage= ndef.getNdefMessage();
 
                 if (ndefMessage != null) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (NdefRecord ndefRecord : ndefMessage.getRecords()) {
-                                tv.setText("Device URL: " + new String(ndefRecord.getPayload()));
-                            }
+                    runOnUiThread(() -> {
+                        for (NdefRecord ndefRecord : ndefMessage.getRecords()) {
+                            tv.setText(MessageFormat.format("Device URL: {0}", new String(ndefRecord.getPayload())));
                         }
                     });
                 }

@@ -57,7 +57,7 @@ public class BleScanner extends AppCompatActivity {
                 }
             }
 
-            TableLayout table = (TableLayout) findViewById(R.id.MAC_RSSI);
+            TableLayout table = findViewById(R.id.MAC_RSSI);
             for (String address : addresses_to_remove) {
                 last_scanned_time_by_address.remove(address);
                 for (int i = 1, j = table.getChildCount(); i < j; i++) {
@@ -67,7 +67,7 @@ public class BleScanner extends AppCompatActivity {
                     }
                 }
             }
-            TextView tv = (TextView) findViewById(R.id.NumDevices);
+            TextView tv = findViewById(R.id.NumDevices);
             tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
 
             handler.postDelayed(this, 10000);
@@ -79,7 +79,7 @@ public class BleScanner extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.location_screen);
-        TextView tv = (TextView) findViewById(R.id.NumDevices);
+        TextView tv = findViewById(R.id.NumDevices);
         tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
 
         ScanBLEDevices();
@@ -141,11 +141,11 @@ public class BleScanner extends AppCompatActivity {
                 //@Override
                 runOnUiThread(() -> {
                     // update UI for num of devices
-                    TextView tv = (TextView) findViewById(R.id.NumDevices);
+                    TextView tv = findViewById(R.id.NumDevices);
                     tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
 
                     // update UI for MAC-RSSI database
-                    TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
+                    TableLayout tl = findViewById(R.id.MAC_RSSI);
                     TableRow tr_head = new TableRow(getApplicationContext());
 
                     TextView MAC_view = new TextView(getApplicationContext());
@@ -180,10 +180,10 @@ public class BleScanner extends AppCompatActivity {
                             acoustics_or_uwb += beacon[i];
                     }
                         if (acoustics_or_uwb == 117){
-                            trigger_button.setText("Activate Sound");
+                            trigger_button.setText(R.string.activate_sound);
                             trigger_button.setOnClickListener(v -> sendBeacon(v));
                         }else {
-                            trigger_button.setText("Activate UWB");
+                            trigger_button.setText(R.string.activate_uwb);
                             trigger_button.setOnClickListener(v -> {
                             });
                         }
@@ -201,7 +201,7 @@ public class BleScanner extends AppCompatActivity {
                     db.put(deviceID, deviceRSSI);
                     runOnUiThread(() -> {
                         // update UI for existing MAC with new RSSI value
-                        TableLayout tl = (TableLayout) findViewById(R.id.MAC_RSSI);
+                        TableLayout tl = findViewById(R.id.MAC_RSSI);
                         for (int i = 0; i < tl.getChildCount(); i++) {
                             TableRow tr = (TableRow) tl.getChildAt(i);
                             TextView tv1 = (TextView) tr.getChildAt(0);

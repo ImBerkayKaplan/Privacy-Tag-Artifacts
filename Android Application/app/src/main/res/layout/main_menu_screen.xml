@@ -20,7 +20,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/buttonInventoryMode"
         android:layout_width="181dp"
         android:layout_height="125dp"
         android:onClick="switchInventoryMode"
