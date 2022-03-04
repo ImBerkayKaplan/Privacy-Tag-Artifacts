@@ -11,8 +11,8 @@
         android:id="@+id/locationModeTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Location Mode"
-        android:textSize="25dp"
+        android:text="@string/location_mode_name"
+        android:textSize="25sp"
         android:gravity="center"
         android:background="@color/teal_200"
         app:layout_constraintEnd_toEndOf="parent"
@@ -27,7 +27,7 @@
         android:background="@color/white"
         android:gravity="center"
         android:text="Devices Found: 0"
-        android:textSize="25dp"
+        android:textSize="25sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -51,7 +51,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="MAC"
+                android:text="@string/mac"
                 android:textStyle="bold" />
 
             <TextView
@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Distance"
+                android:text="@string/distance"
                 android:textStyle="bold" />
 
             <TextView
@@ -67,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Locate"
+                android:text="@string/locate"
                 android:textStyle="bold" />
 
         </TableRow>

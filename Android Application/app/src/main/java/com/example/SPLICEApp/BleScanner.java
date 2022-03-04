@@ -39,7 +39,6 @@ public class BleScanner extends AppCompatActivity {
 
     private static final HashMap<String, String> db = new HashMap<>();
     private final HashMap<View, byte[]> trigger_by_address = new HashMap<>();
-
     private final HashMap<String, Long> last_scanned_time_by_address = new HashMap<>();
     private final Handler handler = new Handler();
     private final Runnable remove_older_address_thread = new Runnable() {
@@ -51,17 +50,17 @@ public class BleScanner extends AppCompatActivity {
                 String address = entry.getKey();
                 long last_scanned_time = entry.getValue();
                 if (current_time - last_scanned_time > 10000) {
-                    Log.e("Remove", address);
                     db.remove(address);
                     addresses_to_remove.add(address);
                 }
             }
 
+            // Remove the expired beacon from the table UI
             TableLayout table = findViewById(R.id.MAC_RSSI);
             for (String address : addresses_to_remove) {
                 last_scanned_time_by_address.remove(address);
                 for (int i = 1, j = table.getChildCount(); i < j; i++) {
-                    TableRow row = (TableRow) (table.getChildAt(i));
+                    TableRow row = (TableRow) table.getChildAt(i);
                     if (((TextView) row.getChildAt(0)).getText().equals(address)) {
                         table.removeView(row);
                     }
@@ -86,6 +85,16 @@ public class BleScanner extends AppCompatActivity {
         handler.post(remove_older_address_thread);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        db.clear();
+        last_scanned_time_by_address.clear();
+        trigger_by_address.clear();
+        TableLayout table = findViewById(R.id.MAC_RSSI);
+        table.removeAllViews();
+    }
+
     private void ScanBLEDevices(){
 
         // Prepare the bluetooth adapter and scanner
@@ -107,7 +116,6 @@ public class BleScanner extends AppCompatActivity {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-
             // Remove all beacons that don't conform to our standards
             byte[] beacon = result.getScanRecord().getBytes();
             int our_beacon = 0;
@@ -116,7 +124,7 @@ public class BleScanner extends AppCompatActivity {
                 //Log.e("Beacon:", String.valueOf(beacon[i]));
             }
             //Log.e("Our Beacon Sum:", String.valueOf(our_beacon));
-            if(our_beacon != 797) return;
+            //if(our_beacon != 797) return;
 
             // Obtain the address of the device, and keep a record of when it was received
             String deviceID = result.getDevice().getAddress();
@@ -175,7 +183,7 @@ public class BleScanner extends AppCompatActivity {
                     trigger_button.setLayoutParams(trigger_params);
 
                     // Determine if the incoming beacon is from acoustic or UWB board
-                    if (finalOur_beacon == 797 && db.size() != 3){
+                    if (finalOur_beacon == 797){
                         trigger_button.setText(R.string.activate_sound);
                         trigger_button.setOnClickListener(v -> sendBeacon(v));
                     }else {
