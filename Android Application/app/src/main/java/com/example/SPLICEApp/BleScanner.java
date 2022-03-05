@@ -16,7 +16,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.Gravity;
@@ -28,9 +27,8 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -39,57 +37,28 @@ public class BleScanner extends AppCompatActivity {
 
     private static final HashMap<String, String> db = new HashMap<>();
     private final HashMap<View, byte[]> trigger_by_address = new HashMap<>();
-    private final HashMap<String, Long> last_scanned_time_by_address = new HashMap<>();
-    private final Handler handler = new Handler();
-    private final Runnable remove_older_address_thread = new Runnable() {
-        @Override
-        public void run() {
-            long current_time = System.currentTimeMillis();
-            ArrayList<String> addresses_to_remove = new ArrayList<>();
-            for (Map.Entry<String, Long> entry : last_scanned_time_by_address.entrySet()) {
-                String address = entry.getKey();
-                long last_scanned_time = entry.getValue();
-                if (current_time - last_scanned_time > 10000) {
-                    db.remove(address);
-                    addresses_to_remove.add(address);
-                }
-            }
-
-            // Remove the expired beacon from the table UI
-            TableLayout table = findViewById(R.id.MAC_RSSI);
-            for (String address : addresses_to_remove) {
-                last_scanned_time_by_address.remove(address);
-                for (int i = 1, j = table.getChildCount(); i < j; i++) {
-                    TableRow row = (TableRow) table.getChildAt(i);
-                    if (((TextView) row.getChildAt(0)).getText().equals(address)) {
-                        table.removeView(row);
-                    }
-                }
-            }
-            TextView tv = findViewById(R.id.NumDevices);
-            tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
-
-            handler.postDelayed(this, 10000);
-        }
-    };
+    private final BluetoothLeScanner bluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.location_screen);
+    }
+
+    protected void onStart(){
+        super.onStart();
+        ScanBLEDevices();
         TextView tv = findViewById(R.id.NumDevices);
         tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
-
-        ScanBLEDevices();
-        handler.post(remove_older_address_thread);
+        //handler.post(remove_older_address_thread);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         db.clear();
-        last_scanned_time_by_address.clear();
+        bluetoothLeScanner.stopScan(bleScanCallback);
         trigger_by_address.clear();
         TableLayout table = findViewById(R.id.MAC_RSSI);
         table.removeAllViews();
@@ -98,7 +67,6 @@ public class BleScanner extends AppCompatActivity {
     private void ScanBLEDevices(){
 
         // Prepare the bluetooth adapter and scanner
-        BluetoothLeScanner bluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
         final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
 
@@ -118,17 +86,17 @@ public class BleScanner extends AppCompatActivity {
             super.onScanResult(callbackType, result);
             // Remove all beacons that don't conform to our standards
             byte[] beacon = result.getScanRecord().getBytes();
-            int our_beacon = 0;
-            for(int i = 0; i < beacon.length && i < 25; i++){
+            int our_beacon = 0, uwb_or_buzzer;
+            for(int i = 9; i < beacon.length && i < 25; i++){
                 our_beacon += beacon[i];
                 //Log.e("Beacon:", String.valueOf(beacon[i]));
             }
             //Log.e("Our Beacon Sum:", String.valueOf(our_beacon));
-            //if(our_beacon != 797) return;
+            if(our_beacon != -50) return;
+            uwb_or_buzzer = beacon[9];
 
             // Obtain the address of the device, and keep a record of when it was received
             String deviceID = result.getDevice().getAddress();
-            last_scanned_time_by_address.put(deviceID, System.currentTimeMillis());
 
             // infers distance by RSSI
             int temp = result.getRssi();
@@ -145,8 +113,8 @@ public class BleScanner extends AppCompatActivity {
             if (!db.containsKey(deviceID)) {
                 // new device, add row to table
                 db.put(deviceID, deviceRSSI);
+
                 //@Override
-                int finalOur_beacon = our_beacon;
                 runOnUiThread(() -> {
                     // update UI for num of devices
                     TextView tv = findViewById(R.id.NumDevices);
@@ -183,7 +151,7 @@ public class BleScanner extends AppCompatActivity {
                     trigger_button.setLayoutParams(trigger_params);
 
                     // Determine if the incoming beacon is from acoustic or UWB board
-                    if (finalOur_beacon == 797){
+                    if (uwb_or_buzzer == -1){
                         trigger_button.setText(R.string.activate_sound);
                         trigger_button.setOnClickListener(v -> sendBeacon(v));
                     }else {
@@ -198,7 +166,7 @@ public class BleScanner extends AppCompatActivity {
                     tr_head.addView(trigger_button);
 
                     tl.addView(tr_head, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
-                    trigger_by_address.put(trigger_button, result.getScanRecord().getBytes());
+                    trigger_by_address.put(trigger_button, Arrays.copyOfRange(result.getScanRecord().getBytes(), 9, 25));
                 });
 
                 } else {
@@ -224,14 +192,10 @@ public class BleScanner extends AppCompatActivity {
         BluetoothLeAdvertiser advertiser = BluetoothAdapter.getDefaultAdapter().getBluetoothLeAdvertiser();
         ParcelUuid pUuid = new ParcelUuid(UUID.fromString(getString(R.string.ble_uuid)));
 
-        byte[] value = new byte[6];
-        for (int i = 0; i < 6; i++) {
-            value[i] = Objects.requireNonNull(trigger_by_address.get(view))[i + 9];
-        }
-
+        byte[] viewValue = trigger_by_address.get(view);
         AdvertiseData data = (new AdvertiseData.Builder())
                 .setIncludeDeviceName(true)
-                .addServiceData(pUuid, value)
+                .addServiceData(pUuid, Arrays.copyOfRange(Objects.requireNonNull(viewValue), 0, 6))
                 .build();
 
         AdvertiseSettings settings = new AdvertiseSettings.Builder()
