@@ -31,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
                 requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
         }
+
+        // TODO: For test only!
+        // Intent intent = new Intent(this, UWBScanner.class);
+        // startActivity(intent);
     }
 
     public void switchLocationMode(View view) {

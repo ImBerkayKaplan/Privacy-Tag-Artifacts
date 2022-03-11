@@ -220,4 +220,9 @@ public class BleScanner extends AppCompatActivity {
         };
         advertiser.startAdvertising(settings, data, advertisingCallback);
     }
+
+    public void switchUWBMode(View view) {
+        Intent intent = new Intent(this, UWBScanner.class);
+        startActivity(intent);
+    }
 }
