@@ -23,17 +23,10 @@ import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
-import org.w3c.dom.Text;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 
 public class UWBScanner extends AppCompatActivity {
-    private UsbSerialPort port = null;
-    private UWBListener uwbListener = null;
 
     class UWBListener implements SerialInputOutputManager.Listener{
 
@@ -41,8 +34,8 @@ public class UWBScanner extends AppCompatActivity {
         @Override
         public void onNewData(byte[] data) {
             String message = new String(data, StandardCharsets.UTF_8);
-            TextView tv = (TextView) findViewById(R.id.UWBScannerStatus);
-            tv.setText("Distance: " + message);
+            TextView tv = findViewById(R.id.UWBScannerStatus);
+            tv.setText(String.format("Distance: %s", message));
         }
 
         @Override
@@ -51,43 +44,37 @@ public class UWBScanner extends AppCompatActivity {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.uwb_scanner_screen);
 
-        TextView text = (TextView) findViewById(R.id.UWBScannerStatus);
+        TextView text = findViewById(R.id.UWBScannerStatus);
 
-        this.uwbListener = new UWBListener();
-
-        this.port = connect();
-        if (this.port == null){
+        UsbSerialPort port = connect();
+        if (port == null){
             Toast.makeText(this, "Connection to UWB adapter failed", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
         Handler handler = new Handler();
-        UsbSerialPort finalPort = port;
         final Runnable r = new Runnable() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             public void run() {
                 handler.postDelayed(this, 800);
 
-                int len = 0;
-                byte buffer[] = new byte[8192];
+                byte[] buffer = new byte[8192];
                 try {
-                    len = finalPort.read(buffer, 200);
-                    /*if (len == 6) {
-                        receive(Arrays.copyOf(buffer, len), text);
-                    }*/
+                    port.read(buffer, 200);
                     String distance = new String(buffer, StandardCharsets.UTF_8);
                     distance = distance.trim();
                     if (distance.length() >= 4) {
                         distance = distance.substring(0, 4);
                         int decimal_index = distance.indexOf('.');
                         if (decimal_index != -1  && decimal_index != 0) {
-                            text.setText("Distance: \n" + distance + " meters");
+                            text.setText(String.format("Distance: \n%s meters", distance));
                         }
                     }
                 } catch (IOException e) {
@@ -95,43 +82,7 @@ public class UWBScanner extends AppCompatActivity {
                 }
             }
         };
-        handler.postDelayed(r, 0000);
-    }
-
-    private void receive(byte[] data, TextView txt) {
-        String message = dumpHexString(data);
-        txt.setText(message);
-    }
-
-    public static String dumpHexString(byte[] array) {
-        StringBuilder result = new StringBuilder();
-
-        byte[] line = new byte[8];
-        int lineIndex = 0;
-
-        for (int i = 0; i < 0 + array.length; i++) {
-            if (lineIndex == line.length) {
-                for (int j = 0; j < line.length; j++) {
-                    if (line[j] > ' ' && line[j] < '~') {
-                        result.append(new String(line, j, 1));
-                    } else {
-                        result.append(".");
-                    }
-                }
-                result.append("\n");
-                lineIndex = 0;
-            }
-            byte b = array[i];
-            line[lineIndex++] = b;
-        }
-        for (int i = 0; i < lineIndex; i++) {
-            if (line[i] > ' ' && line[i] < '~') {
-                result.append(new String(line, i, 1));
-            } else {
-                result.append(" ");
-            }
-        }
-        return result.toString();
+        handler.postDelayed(r, 0);
     }
 
     private UsbSerialProber getCustomProbe() {
@@ -140,6 +91,7 @@ public class UWBScanner extends AppCompatActivity {
         return new UsbSerialProber(customTable);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public UsbSerialPort connect() {
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
@@ -187,12 +139,5 @@ public class UWBScanner extends AppCompatActivity {
         }
 
         return usbSerialPort;
-
-        /*this.port = usbSerialPort;
-        this.uwbListener = new UWBListener();
-
-        SerialInputOutputManager usbIoManager = new SerialInputOutputManager(usbSerialPort, uwbListener);
-        usbIoManager.start();*/
-
     }
 }
