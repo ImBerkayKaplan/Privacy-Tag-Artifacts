@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.SPLICEApp">
+    package="spliceApp">
 
     <uses-sdk android:minSdkVersion="17" />
 
@@ -30,9 +30,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BLEScreener3">
 
-        <activity android:name=".NfcScanner" />
-        <activity android:name=".BleScanner" />
-        <activity android:name=".MainActivity" android:exported="true">
+        <activity android:name="com.example.spliceApp.NfcScanner" />
+        <activity android:name="com.example.spliceApp.BleScanner" />
+        <activity android:name="com.example.spliceApp.MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

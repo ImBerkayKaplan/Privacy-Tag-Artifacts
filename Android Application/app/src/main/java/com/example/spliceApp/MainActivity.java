@@ -1,4 +1,4 @@
-package com.example.SPLICEApp;
+package com.example.spliceApp;
 
 import android.Manifest;
 import android.content.Intent;
@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import java.util.Objects;
+import spliceApp.R;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class MainActivity extends AppCompatActivity {

@@ -1,4 +1,4 @@
-package com.example.SPLICEApp;
+package com.example.spliceApp;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;

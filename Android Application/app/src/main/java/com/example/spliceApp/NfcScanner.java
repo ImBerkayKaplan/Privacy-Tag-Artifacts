@@ -1,4 +1,4 @@
-package com.example.SPLICEApp;
+package com.example.spliceApp;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +14,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.MessageFormat;
+
+import spliceApp.R;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class NfcScanner extends AppCompatActivity {

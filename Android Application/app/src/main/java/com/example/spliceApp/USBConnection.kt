@@ -1,4 +1,4 @@
-package com.example.SPLICEApp
+package com.example.spliceApp
 
 import android.app.PendingIntent
 import android.content.Context

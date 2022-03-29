@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "BLEScreener3"
+rootProject.name = "SPLICEApp"
