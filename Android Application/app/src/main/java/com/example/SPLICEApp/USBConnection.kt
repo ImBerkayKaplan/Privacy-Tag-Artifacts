@@ -1,6 +1,5 @@
 package com.example.SPLICEApp
 
-import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.USB_SERVICE
@@ -15,7 +14,6 @@ import androidx.annotation.RequiresApi
 import com.hoho.android.usbserial.driver.*
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 import java.io.IOException
-import java.lang.Thread.sleep
 import java.nio.ByteBuffer
 
 
@@ -23,24 +21,6 @@ import java.nio.ByteBuffer
 class USBConnection(private val context: Context) : SerialInputOutputManager.Listener{
     private var port: UsbSerialPort? = null
     private lateinit var uwbDistanceText: TextView
-
-    companion object {
-
-        @SuppressLint("StaticFieldLeak")
-        private var instance: USBConnection? = null
-
-        fun getInstance(context: Context): USBConnection? {
-            if (instance == null) {
-                instance = USBConnection(context.applicationContext)
-            }
-            return instance
-        }
-
-        fun getInstance(): USBConnection? {
-            if (instance == null) throw RuntimeException("Need to call getInstance with context first in GoogleMapOperations")
-            return instance
-        }
-    }
 
     private fun getCustomProbe(): UsbSerialProber {
         val customTable = ProbeTable()
@@ -101,13 +81,10 @@ class USBConnection(private val context: Context) : SerialInputOutputManager.Lis
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onNewData(data: ByteArray?) {
         if (data == null || data.isEmpty()) return
-        for (i: Byte in data){
-            this.uwbDistanceText.text = i.toString()
-        }
-//        val buffer = ByteBuffer.wrap(data)
-//        val float1 = buffer.getFloat(0).times(1000000000.0).toString().substring(0,5)
-//        Log.e("onNewData:", float1)
-//        this.uwbDistanceText.text = float1
+        val buffer = ByteBuffer.wrap(data)
+        val float1 = buffer.getFloat(0).times(1000000000.0).toString().substring(0,5)
+        Log.e("onNewData:", float1)
+        this.uwbDistanceText.text = float1
     }
 
     override fun onRunError(e: Exception?) {
