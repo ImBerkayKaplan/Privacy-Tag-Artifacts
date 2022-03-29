@@ -11,10 +11,10 @@
         android:id="@+id/locationModeTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/teal_200"
+        android:gravity="center"
         android:text="@string/location_mode_name"
         android:textSize="25sp"
-        android:gravity="center"
-        android:background="@color/teal_200"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -75,15 +75,16 @@
 
     </TableLayout>
 
-    <Button
-        android:id="@+id/UWBActivate"
+    <TextView
+        android:id="@+id/UWBDistance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="159dp"
-        android:layout_marginTop="29dp"
-        android:text="Activate UWB"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="36dp"
+        android:text="UWB Distance"
+        app:layout_constraintBottom_toTopOf="@+id/NumDevices"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/locationModeTitle"
-        android:onClick="switchUWBMode"/>
+        app:layout_constraintTop_toBottomOf="@+id/locationModeTitle" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

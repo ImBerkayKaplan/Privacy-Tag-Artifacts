@@ -26,6 +26,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,20 +39,29 @@ public class BleScanner extends AppCompatActivity {
     private static final HashMap<String, String> db = new HashMap<>();
     private final HashMap<View, byte[]> trigger_by_address = new HashMap<>();
     private final BluetoothLeScanner bluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
+    private USBConnection USB;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.location_screen);
+        this.USB = USBConnection.Companion.getInstance(getApplicationContext());
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     protected void onStart(){
         super.onStart();
         ScanBLEDevices();
         TextView tv = findViewById(R.id.NumDevices);
         tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
-        //handler.post(remove_older_address_thread);
+
+        // Open the UWB port
+        try {
+            this.USB.connect(findViewById(R.id.UWBDistance));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -93,6 +103,9 @@ public class BleScanner extends AppCompatActivity {
             }
             //Log.e("Our Beacon Sum:", String.valueOf(our_beacon));
             if(our_beacon != -50) return;
+            Log.e("Beacon:", String.valueOf(beacon[9]));
+            Log.e("Beacon:", String.valueOf(beacon[10]));
+            Log.e("Beacon:", "\n");
             uwb_or_buzzer = beacon[9];
 
             // Obtain the address of the device, and keep a record of when it was received
@@ -219,10 +232,5 @@ public class BleScanner extends AppCompatActivity {
             }
         };
         advertiser.startAdvertising(settings, data, advertisingCallback);
-    }
-
-    public void switchUWBMode(View view) {
-        Intent intent = new Intent(this, UWBScanner.class);
-        startActivity(intent);
     }
 }
