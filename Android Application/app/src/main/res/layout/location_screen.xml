@@ -82,6 +82,8 @@
         android:layout_marginTop="40dp"
         android:layout_marginBottom="36dp"
         android:text="UWB Distance"
+        android:textColor="@color/black"
+        android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/NumDevices"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
