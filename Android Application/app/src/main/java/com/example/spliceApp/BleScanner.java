@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.Gravity;
@@ -26,12 +27,17 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.hoho.android.usbserial.driver.UsbSerialPort;
+
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
+
+import spliceApp.R;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BleScanner extends AppCompatActivity {
@@ -46,7 +52,42 @@ public class BleScanner extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.location_screen);
-        this.USB = USBConnection.Companion.getInstance(getApplicationContext());
+        //this.USB = USBConnection.Companion.getInstance(getApplicationContext());
+        this.USB = new USBConnection(this);
+
+        /*
+        try {
+            this.USB.connect(findViewById(R.id.UWBDistance));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        TextView text = (TextView) findViewById(R.id.UWBDistance);
+        Handler handler = new Handler();
+        UsbSerialPort finalPort = this.USB.getPort();
+        final Runnable r = new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+            public void run() {
+                handler.postDelayed(this, 800);
+
+                int len = 0;
+                byte buffer[] = new byte[8192];
+                try {
+                    len = finalPort.read(buffer, 200);
+                    String distance = new String(buffer, StandardCharsets.UTF_8);
+                    distance = distance.trim();
+                    if (distance.length() >= 4) {
+                        distance = distance.substring(0, 4);
+                        int decimal_index = distance.indexOf('.');
+                        if (decimal_index != -1  && decimal_index != 0) {
+                            text.setText(distance);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };*/
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -57,6 +98,16 @@ public class BleScanner extends AppCompatActivity {
         tv.setText(MessageFormat.format("Devices Found: {0}", db.size()));
 
         // Open the UWB port
+        try {
+            this.USB.connect(findViewById(R.id.UWBDistance));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    protected void onResume() {
+        super.onResume();
         try {
             this.USB.connect(findViewById(R.id.UWBDistance));
         } catch (IOException e) {
